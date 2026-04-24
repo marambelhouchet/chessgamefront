@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conquête des Territoires</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #f0d080;
+    --dark: #0d0f14;
+    --dark2: #161a22;
+    --dark3: #1e2430;
+    --dark4: #252d3c;
+    --p1: #2a6dd9;
+    --p1-light: #5b9cff;
+    --p1-glow: rgba(42,109,217,0.4);
+    --p2: #c0392b;
+    --p2-light: #ff6b5b;
+    --p2-glow: rgba(192,57,43,0.4);
+    --bonus: #1a7a4a;
+    --bonus-light: #2ecc71;
+    --trap: #6c3483;
+    --trap-light: #9b59b6;
+    --neutral: #2a3040;
+    --border: #3a4460;
+    --text: #e8dcc8;
+    --text-muted: #7a8299;
+    --cell-size: 62px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Crimson Pro', Georgia, serif;
+    background: var(--dark);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,0.008) 40px, rgba(255,255,255,0.008) 41px),
+      repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.008) 40px, rgba(255,255,255,0.008) 41px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .wrapper { position: relative; z-index: 1; }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    padding: 22px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(201,168,76,0.07) 0%, transparent 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .header h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.3rem, 3.5vw, 2rem);
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    text-shadow: 0 0 30px rgba(201,168,76,0.25);
+  }
+  .header-btns { display: flex; gap: 8px; }
+  .hdr-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--dark3);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .hdr-btn:hover, .hdr-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,0.08); }
+
+  /* LAYOUT */
+  .main-layout {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  /* SCORE BAR — full width, above board area */
+  .score-bar {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    background: var(--dark2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    width: 100%;
+    max-width: 620px;
+  }
+  .score-half {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    transition: background 0.3s;
+    position: relative;
+  }
+  .score-half.p1 { border-right: 1px solid var(--border); }
+  .score-half.active-p1 { background: rgba(42,109,217,0.12); box-shadow: inset 0 0 20px rgba(42,109,217,0.1); }
+  .score-half.active-p2 { background: rgba(192,57,43,0.12); box-shadow: inset 0 0 20px rgba(192,57,43,0.1); }
+  .score-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    border: 2px solid;
+    transition: box-shadow 0.3s;
+  }
+  .score-avatar.p1 { background: rgba(42,109,217,0.2); border-color: var(--p1); color: var(--p1-light); }
+  .score-avatar.p2 { background: rgba(192,57,43,0.2); border-color: var(--p2); color: var(--p2-light); }
+  .active-p1 .score-avatar.p1 { box-shadow: 0 0 16px var(--p1-glow); }
+  .active-p2 .score-avatar.p2 { box-shadow: 0 0 16px var(--p2-glow); }
+  .score-info { flex: 1; }
+  .score-name { font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 3px; }
+  .score-big { font-size: 2rem; font-weight: 700; line-height: 1; }
+  .score-half.p1 .score-big { color: var(--p1-light); }
+  .score-half.p2 .score-big { color: var(--p2-light); }
+  .score-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 1px; }
+  .score-progress { margin-top: 6px; height: 4px; background: var(--dark3); border-radius: 2px; overflow: hidden; }
+  .score-progress-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+  .p1 .score-progress-fill { background: var(--p1); }
+  .p2 .score-progress-fill { background: var(--p2); }
+  .score-turn-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .active-p1 .p1-dot, .active-p2 .p2-dot { opacity: 1; }
+  .p1-dot { background: var(--p1-light); box-shadow: 0 0 6px var(--p1-light); }
+  .p2-dot { background: var(--p2-light); box-shadow: 0 0 6px var(--p2-light); }
+  .score-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 14px;
+    background: var(--dark3);
+    min-width: 60px;
+  }
+  .score-vs { font-family: 'Cinzel', serif; font-size: 0.6rem; color: var(--text-muted); letter-spacing: 0.1em; }
+  .score-obj { font-size: 0.65rem; color: var(--gold); margin-top: 2px; text-align: center; line-height: 1.3; }
+
+  /* PANELS */
+  .left-panel { display: flex; flex-direction: column; gap: 12px; width: 200px; flex-shrink: 0; }
+  .panel { background: var(--dark2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+  .panel-title { font-family: 'Cinzel', serif; font-size: 0.68rem; letter-spacing: 0.15em; color: var(--gold); text-transform: uppercase; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(201,168,76,0.2); }
+
+  /* TURN panel */
+  .turn-info { text-align: center; }
+  .turn-badge { display: inline-block; font-family: 'Cinzel', serif; font-size: 0.73rem; padding: 4px 12px; border-radius: 20px; margin-bottom: 8px; }
+  .turn-badge.p1 { background: rgba(42,109,217,0.2); border: 1px solid var(--p1); color: var(--p1-light); }
+  .turn-badge.p2 { background: rgba(192,57,43,0.2); border: 1px solid var(--p2); color: var(--p2-light); }
+  .move-display { font-size: 2.4rem; font-weight: 600; color: var(--gold); line-height: 1; }
+  .move-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+  .dice-area { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 8px; }
+  #dice-svg { cursor: pointer; transition: transform 0.12s; }
+  #dice-svg:hover { transform: scale(1.07); }
+  #dice-svg:active { transform: scale(0.95); }
+  .btn { width: 100%; padding: 9px; border: none; border-radius: 7px; font-family: 'Cinzel', serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em; cursor: pointer; transition: all 0.2s; }
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .btn-end { background: linear-gradient(135deg, #1a5c3a, #2ecc71); color: white; border: 1px solid #2ecc71; }
+  .btn-end:not(:disabled):hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+  /* COLLAPSIBLE PANELS */
+  .collapsible { overflow: hidden; }
+  .collapsible-content { display: none; padding-top: 8px; }
+  .collapsible-content.open { display: block; }
+
+  /* Legend */
+  .legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; color: var(--text-muted); }
+  .leg-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+  /* BOARD */
+  .board-container { display: flex; flex-direction: column; align-items: center; }
+  .coord-row { display: flex; align-items: center; gap: 2px; padding-left: 24px; }
+  .coord-lbl { width: var(--cell-size); text-align: center; font-size: 0.62rem; color: var(--text-muted); font-family: 'Cinzel', serif; }
+  #board { display: grid; grid-template-columns: repeat(9, var(--cell-size)); grid-template-rows: repeat(9, var(--cell-size)); gap: 2px; background: #080a0e; padding: 6px; border-radius: 10px; border: 2px solid var(--border); box-shadow: 0 0 40px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,0,0,0.3); }
+  .row-nums { display: flex; flex-direction: column; gap: 2px; padding-top: 6px; }
+  .row-num { height: var(--cell-size); display: flex; align-items: center; justify-content: flex-end; font-size: 0.62rem; color: var(--text-muted); font-family: 'Cinzel', serif; width: 20px; }
+
+  .cell { width: var(--cell-size); height: var(--cell-size); background: var(--neutral); border: 1px solid #3a4460; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; position: relative; overflow: hidden; }
+  .cell:hover { border-color: var(--gold); filter: brightness(1.1); }
+  .cell.bonus { background: rgba(26,122,74,0.22); border-color: var(--bonus); }
+  .cell.bonus::after { content: '✦'; position: absolute; bottom: 2px; right: 3px; font-size: 8px; color: var(--bonus-light); opacity: 0.7; }
+  .cell.trap { background: rgba(108,52,131,0.22); border-color: var(--trap); }
+  .cell.trap::after { content: '⚠'; position: absolute; bottom: 1px; right: 3px; font-size: 8px; color: var(--trap-light); opacity: 0.7; }
+  .cell.p1 { background: rgba(42,109,217,0.16); border-color: var(--p1); }
+  .cell.p2 { background: rgba(192,57,43,0.16); border-color: var(--p2); }
+  .cell.selected { border: 2px solid var(--gold) !important; box-shadow: 0 0 14px rgba(201,168,76,0.55), inset 0 0 8px rgba(201,168,76,0.1); z-index: 5; }
+  .cell.reachable { border: 1.5px dashed rgba(201,168,76,0.5) !important; background: rgba(201,168,76,0.07) !important; }
+  .piece { width: 44px; height: 44px; pointer-events: none; }
+
+  /* RIGHT PANEL */
+  .right-panel { display: flex; flex-direction: column; gap: 12px; width: 200px; flex-shrink: 0; }
+  #log { background: #080a0e; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; height: 200px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.7rem; color: #8ab4f8; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+  .log-entry { margin-bottom: 3px; padding-bottom: 3px; border-bottom: 1px solid rgba(58,68,96,0.25); }
+  .log-entry.combat { color: #ff9f43; }
+  .log-entry.capture { color: #2ecc71; }
+  .log-entry.warn { color: #e74c3c; }
+  .log-entry.info { color: #a0aec0; }
+  .log-entry.turn { color: var(--gold); }
+
+  /* Rules */
+  .rules-list { list-style: none; padding: 0; }
+  .rules-list li { font-size: 0.76rem; color: var(--text-muted); padding: 4px 0; border-bottom: 1px solid rgba(58,68,96,0.3); line-height: 1.4; display: flex; gap: 6px; }
+  .rules-list li:last-child { border: none; }
+  .rules-list li .ri { color: var(--gold); flex-shrink: 0; }
+  .unit-table { width: 100%; font-size: 0.73rem; border-collapse: collapse; margin-top: 4px; }
+  .unit-table th { color: var(--gold); font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.08em; padding: 4px 6px; text-align: left; border-bottom: 1px solid var(--border); }
+  .unit-table td { padding: 4px 6px; color: var(--text-muted); border-bottom: 1px solid rgba(58,68,96,0.2); }
+  .unit-table tr:last-child td { border: none; }
+
+  /* MODAL */
+  #modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; }
+  #modal-backdrop.show { display: flex; }
+  .modal { background: var(--dark2); border: 2px solid var(--gold); border-radius: 14px; padding: 32px 36px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 0 60px rgba(201,168,76,0.15); }
+  .modal h2 { font-family: 'Cinzel', serif; color: var(--gold); font-size: 1.3rem; margin-bottom: 10px; }
+  .modal p { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 18px; line-height: 1.6; }
+  .player-roll { display: flex; justify-content: space-around; margin: 14px 0; }
+  .player-roll-item { text-align: center; }
+  .player-roll-name { font-family: 'Cinzel', serif; font-size: 0.73rem; margin-bottom: 5px; }
+  .player-roll-name.p1 { color: var(--p1-light); }
+  .player-roll-name.p2 { color: var(--p2-light); }
+  .player-roll-val { font-size: 2.2rem; color: var(--gold); }
+  .dice-roll-btn { padding: 12px; font-family: 'Cinzel', serif; font-size: 0.82rem; background: var(--dark3); color: var(--text); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; width: 100%; margin-bottom: 8px; transition: all 0.2s; }
+  .dice-roll-btn:hover:not(:disabled) { border-color: var(--gold); }
+  .dice-roll-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn-modal { padding: 12px 28px; font-family: 'Cinzel', serif; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.1em; background: linear-gradient(135deg, #8a6a14, var(--gold)); color: #0d0f14; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s; width: 100%; margin-top: 4px; }
+  .btn-modal:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .win-crown { font-size: 3rem; margin-bottom: 6px; }
+  .win-name { font-family: 'Cinzel', serif; font-size: 1.7rem; color: var(--gold); margin-bottom: 8px; }
+
+  /* OVERLAY PANELS */
+  .overlay-panel {
+    display: none;
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: 340px;
+    background: var(--dark2);
+    border-left: 1px solid var(--border);
+    z-index: 50;
+    overflow-y: auto;
+    padding: 24px 20px;
+    box-shadow: -10px 0 40px rgba(0,0,0,0.5);
+    transition: transform 0.3s ease;
+    transform: translateX(100%);
+  }
+  .overlay-panel.show { display: block; transform: translateX(0); }
+  .overlay-title { font-family: 'Cinzel', serif; font-size: 1rem; color: var(--gold); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid rgba(201,168,76,0.25); display: flex; justify-content: space-between; align-items: center; }
+  .overlay-close { background: none; border: 1px solid var(--border); color: var(--text-muted); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; }
+  .overlay-close:hover { border-color: var(--gold); color: var(--gold); }
+
+  .overlay-section { margin-bottom: 20px; }
+  .overlay-section-title { font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.12em; color: var(--gold); text-transform: uppercase; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid rgba(201,168,76,0.15); }
+
+  @media (max-width: 860px) {
+    :root { --cell-size: 44px; }
+    .left-panel, .right-panel { width: 100%; flex-direction: row; flex-wrap: wrap; }
+    .panel { flex: 1; min-width: 160px; }
+    .main-layout { flex-direction: column; align-items: center; }
+    .overlay-panel { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<div class="header">
+  <h1>⚔ Conquête des Territoires ⚔</h1>
+  <div class="header-btns">
+    <button class="hdr-btn" onclick="togglePanel('panel-rules')">📖 Règles</button>
+    <button class="hdr-btn" onclick="togglePanel('panel-legend')">🗺 Légende</button>
+  </div>
+</div>
+
+<!-- RULES OVERLAY -->
+<div class="overlay-panel" id="panel-rules">
+  <div class="overlay-title">
+    Règles du jeu
+    <button class="overlay-close" onclick="togglePanel('panel-rules')">✕</button>
+  </div>
+
+  <div class="overlay-section">
+    <div class="overlay-section-title">Comment jouer</div>
+    <ul class="rules-list">
+      <li><span class="ri">🎲</span> Lancez le dé pour obtenir vos points de mouvement (1–6).</li>
+      <li><span class="ri">👆</span> Cliquez une unité pour la sélectionner, puis une case cible.</li>
+      <li><span class="ri">➡</span> Mouvement en ligne droite (horizontale ou verticale) uniquement.</li>
+      <li><span class="ri">⚔</span> Attaque : chaque joueur lance un dé + force. Le plus haut gagne.</li>
+      <li><span class="ri">✦</span> Case Bonus : +1 force au combat pour l'occupant.</li>
+      <li><span class="ri">⚠</span> Piège : l'unité qui entre est détruite immédiatement.</li>
+      <li><span class="ri">🏆</span> Victoire : contrôler 33 cases ou éliminer toutes les unités adverses.</li>
+    </ul>
+  </div>
+
+  <div class="overlay-section">
+    <div class="overlay-section-title">Unités</div>
+    <table class="unit-table">
+      <thead>
+        <tr><th>Unité</th><th>Dépl.</th><th>Force</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>⚔ Soldat (S)</td><td>1 case</td><td>2</td></tr>
+        <tr><td>🐴 Cavalier (C)</td><td>1–2 cases</td><td>1</td></tr>
+        <tr><td>🛡 Tank (T)</td><td>1 case</td><td>3</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="overlay-section">
+    <div class="overlay-section-title">Combat détaillé</div>
+    <ul class="rules-list">
+      <li><span class="ri">1.</span> Attaquant : lance dé + force de son unité (+ bonus si sur case Bonus).</li>
+      <li><span class="ri">2.</span> Défenseur : même calcul.</li>
+      <li><span class="ri">3.</span> Le score le plus élevé l'emporte. En cas d'égalité, le défenseur gagne.</li>
+      <li><span class="ri">4.</span> Victoire attaquant → capture la case. Défaite → son unité est détruite.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- LEGEND OVERLAY -->
+<div class="overlay-panel" id="panel-legend">
+  <div class="overlay-title">
+    Légende
+    <button class="overlay-close" onclick="togglePanel('panel-legend')">✕</button>
+  </div>
+
+  <div class="overlay-section">
+    <div class="overlay-section-title">Joueurs</div>
+    <div class="legend-grid" style="gap:10px">
+      <div class="legend-item" style="font-size:0.85rem"><div class="leg-dot" style="background:var(--p1);width:16px;height:16px"></div> Alice (Bleu)</div>
+      <div class="legend-item" style="font-size:0.85rem"><div class="leg-dot" style="background:var(--p2);width:16px;height:16px"></div> Bob (Rouge)</div>
+    </div>
+  </div>
+
+  <div class="overlay-section">
+    <div class="overlay-section-title">Cases spéciales</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="legend-item" style="font-size:0.85rem"><div class="leg-dot" style="background:var(--bonus);width:16px;height:16px"></div> Bonus ✦ — +1 force au combat</div>
+      <div class="legend-item" style="font-size:0.85rem"><div class="leg-dot" style="background:var(--trap);width:16px;height:16px"></div> Piège ⚠ — détruit l'unité</div>
+      <div class="legend-item" style="font-size:0.85rem"><div class="leg-dot" style="background:var(--neutral);width:16px;height:16px"></div> Neutre — libre à conquérir</div>
+    </div>
+  </div>
+
+  <div class="overlay-section">
+    <div class="overlay-section-title">Interface</div>
+    <ul class="rules-list">
+      <li><span class="ri">🟡</span> Bordure or = unité sélectionnée</li>
+      <li><span class="ri">⬡</span> Pointillés = cases accessibles</li>
+      <li><span class="ri">💡</span> Halo coloré = joueur actif</li>
+    </ul>
+  </div>
+</div>
+
+<div class="main-layout">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="panel">
+      <div class="panel-title">Tour actuel</div>
+      <div class="turn-info">
+        <div class="turn-badge p1" id="turn-badge">Tour d'Alice</div>
+        <div class="move-display" id="move-pts">—</div>
+        <div class="move-sub">points de mouvement</div>
+        <div class="dice-area">
+          <svg id="dice-svg" width="54" height="54" viewBox="0 0 54 54" onclick="rollMoveDice()" role="button" aria-label="Lancer le dé">
+            <rect x="2" y="2" width="50" height="50" rx="10" fill="#1e2430" stroke="#c9a84c" stroke-width="2"/>
+            <g id="dice-pips" fill="#c9a84c"></g>
+          </svg>
+          <div style="font-size:0.68rem;color:var(--text-muted)">Cliquez pour lancer</div>
+        </div>
+        <button class="btn btn-end" id="btn-end" onclick="endTurn()" disabled style="margin-top:8px">Fin du tour →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER: score bar + board -->
+  <div class="board-container">
+    <!-- SCORE BAR -->
+    <div class="score-bar" id="score-bar">
+      <div class="score-half p1" id="half-p1">
+        <div class="score-avatar p1">A</div>
+        <div class="score-info">
+          <div class="score-name">Alice</div>
+          <div class="score-big" id="s1">5</div>
+          <div class="score-sub">cases / 33 pour gagner</div>
+          <div class="score-progress">
+            <div class="score-progress-fill" id="prog-p1" style="width:6%"></div>
+          </div>
+        </div>
+        <div class="score-turn-dot p1-dot"></div>
+      </div>
+      <div class="score-center">
+        <div class="score-vs">VS</div>
+        <div class="score-obj">33<br>cases</div>
+      </div>
+      <div class="score-half p2" id="half-p2">
+        <div class="score-turn-dot p2-dot"></div>
+        <div class="score-info" style="text-align:right">
+          <div class="score-name">Bob</div>
+          <div class="score-big" id="s2">5</div>
+          <div class="score-sub">cases / 33 pour gagner</div>
+          <div class="score-progress">
+            <div class="score-progress-fill" id="prog-p2" style="width:6%"></div>
+          </div>
+        </div>
+        <div class="score-avatar p2">B</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:2px">
+      <div style="display:flex;flex-direction:column;gap:0;padding-top:28px">
+        <div id="row-nums" class="row-nums"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <div class="coord-row" id="col-coords"></div>
+        <div id="board"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="panel">
+      <div class="panel-title">Journal de jeu</div>
+      <div id="log"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- STARTUP MODAL -->
+<div id="modal-backdrop" class="show">
+  <div class="modal" id="modal-content">
+    <h2>⚔ Conquête des Territoires ⚔</h2>
+    <p>Chaque joueur lance un dé. Le plus grand score commence la partie.</p>
+    <div class="player-roll">
+      <div class="player-roll-item">
+        <div class="player-roll-name p1">Alice</div>
+        <div class="player-roll-val" id="roll-alice">—</div>
+      </div>
+      <div style="font-size:2rem;color:var(--border);margin-top:12px">vs</div>
+      <div class="player-roll-item">
+        <div class="player-roll-name p2">Bob</div>
+        <div class="player-roll-val" id="roll-bob">—</div>
+      </div>
+    </div>
+    <button class="dice-roll-btn" id="btn-roll-alice" onclick="startRoll(1)">🎲 Alice lance le dé</button>
+    <button class="dice-roll-btn" id="btn-roll-bob" onclick="startRoll(2)" disabled>🎲 Bob lance le dé</button>
+    <button class="btn-modal" id="btn-start" onclick="startGame()" style="display:none">Commencer la partie !</button>
+  </div>
+</div>
+
+<script>
+const SIZE = 9;
+const UNITS = {
+  S: { label: 'Soldat', maxStep: 1, power: 2 },
+  C: { label: 'Cavalier', maxStep: 2, power: 1 },
+  T: { label: 'Tank', maxStep: 1, power: 3 }
+};
+
+let board = [], currentPlayer = 1, selectedCell = null, movePoints = 0, diceRolled = false;
+let startRolls = [0, 0];
+let bonusCells = new Set(), trapCells = new Set();
+
+function togglePanel(id) {
+  const p = document.getElementById(id);
+  p.classList.toggle('show');
+}
+
+// Close overlays on backdrop click
+document.addEventListener('click', function(e) {
+  ['panel-rules','panel-legend'].forEach(id => {
+    const p = document.getElementById(id);
+    if(p.classList.contains('show') && !p.contains(e.target) && !e.target.closest('.hdr-btn')) {
+      p.classList.remove('show');
+    }
+  });
+});
+
+function pieceSVG(unit, player) {
+  const c1 = player === 1 ? '#2a6dd9' : '#c0392b';
+  const c2 = player === 1 ? '#5b9cff' : '#ff6b5b';
+  const base = `<svg class="piece" viewBox="0 0 46 46" xmlns="http://www.w3.org/2000/svg">`;
+  if (unit === 'S') return base + `<circle cx="23" cy="23" r="20" fill="${c1}" stroke="${c2}" stroke-width="1.5"/><polygon points="23,10 28,20 38,20 30,27 33,37 23,31 13,37 16,27 8,20 18,20" fill="${c2}" stroke="${c1}" stroke-width="0.5"/></svg>`;
+  if (unit === 'C') return base + `<circle cx="23" cy="23" r="20" fill="${c1}" stroke="${c2}" stroke-width="1.5"/><ellipse cx="23" cy="20" rx="9" ry="7" fill="${c2}"/><rect x="18" y="26" width="4" height="9" rx="2" fill="${c2}"/><rect x="24" y="26" width="4" height="9" rx="2" fill="${c2}"/><circle cx="19" cy="17" r="2.5" fill="${c1}"/><circle cx="27" cy="17" r="2.5" fill="${c1}"/><rect x="14" y="20" width="5" height="3" rx="1" fill="${c2}"/></svg>`;
+  if (unit === 'T') return base + `<circle cx="23" cy="23" r="20" fill="${c1}" stroke="${c2}" stroke-width="1.5"/><rect x="11" y="17" width="24" height="16" rx="3" fill="${c2}"/><rect x="14" y="14" width="18" height="10" rx="2" fill="${c1}" stroke="${c2}" stroke-width="1"/><rect x="20" y="10" width="6" height="7" rx="1" fill="${c2}"/><circle cx="16" cy="32" r="3" fill="${c1}" stroke="${c2}" stroke-width="1"/><circle cx="23" cy="32" r="3" fill="${c1}" stroke="${c2}" stroke-width="1"/><circle cx="30" cy="32" r="3" fill="${c1}" stroke="${c2}" stroke-width="1"/></svg>`;
+  return '';
+}
+
+const PIP_POS = {
+  1:[[27,27]],2:[[14,14],[40,40]],3:[[14,14],[27,27],[40,40]],
+  4:[[14,14],[40,14],[14,40],[40,40]],5:[[14,14],[40,14],[27,27],[14,40],[40,40]],
+  6:[[14,14],[40,14],[14,27],[40,27],[14,40],[40,40]]
+};
+function renderDiceFace(v){ return (PIP_POS[v]||[]).map(([x,y])=>`<circle cx="${x}" cy="${y}" r="4" fill="#c9a84c"/>`).join(''); }
+function animateDice(finalVal, elId){
+  return new Promise(resolve=>{
+    const el=document.getElementById(elId); let count=0;
+    const iv=setInterval(()=>{
+      const v=Math.ceil(Math.random()*6);
+      if(el) el.innerHTML=renderDiceFace(v);
+      if(++count>=8){clearInterval(iv);if(el)el.innerHTML=renderDiceFace(finalVal);resolve();}
+    },75);
+  });
+}
+
+async function startRoll(player){
+  const val=Math.ceil(Math.random()*6);
+  startRolls[player-1]=val;
+  if(player===1){
+    document.getElementById('roll-alice').textContent=val;
+    document.getElementById('btn-roll-alice').disabled=true;
+    document.getElementById('btn-roll-bob').disabled=false;
+  } else {
+    document.getElementById('roll-bob').textContent=val;
+    document.getElementById('btn-roll-bob').disabled=true;
+    const a=startRolls[0], b=startRolls[1];
+    if(a===b){
+      document.getElementById('roll-alice').textContent='—';
+      document.getElementById('roll-bob').textContent='—';
+      startRolls=[0,0];
+      document.getElementById('btn-roll-alice').disabled=false;
+      document.getElementById('btn-roll-bob').disabled=true;
+      addLog('Égalité ! Relancez.','warn'); return;
+    }
+    currentPlayer=a>b?1:2;
+    const winner=a>b?'Alice':'Bob';
+    setTimeout(()=>{
+      const p=document.createElement('p');
+      p.style.cssText='color:#c9a84c;font-size:1.05rem;margin:8px 0';
+      p.textContent=`${winner} commence !`;
+      document.getElementById('modal-content').insertBefore(p,document.getElementById('btn-start'));
+      document.getElementById('btn-start').style.display='block';
+    },300);
+  }
+}
+
+function startGame(){
+  document.getElementById('modal-backdrop').classList.remove('show');
+  initBoard(); updateTurnUI();
+  addLog(`Partie lancée ! Tour : ${currentPlayer===1?'Alice':'Bob'}`,'turn');
+}
+
+function initBoard(){
+  board=[];
+  bonusCells=new Set(['3,3','4,4','3,5','5,3']);
+  trapCells=new Set(['2,6','6,2','4,7','7,4']);
+  for(let r=0;r<SIZE;r++){board[r]=[];for(let c=0;c<SIZE;c++){const k=`${r},${c}`;board[r][c]={player:0,unit:null,bonus:bonusCells.has(k),trap:trapCells.has(k)};}}
+  setU(0,0,1,'T');setU(0,1,1,'S');setU(1,0,1,'C');setU(1,1,1,'S');setU(0,2,1,'S');
+  setU(8,8,2,'T');setU(8,7,2,'S');setU(7,8,2,'C');setU(7,7,2,'S');setU(8,6,2,'S');
+  buildGrid(); renderBoard();
+}
+
+function setU(r,c,p,u){board[r][c].player=p;board[r][c].unit=u;}
+
+function buildGrid(){
+  const cc=document.getElementById('col-coords');
+  cc.innerHTML='<div style="width:4px"></div>';
+  for(let c=0;c<SIZE;c++) cc.innerHTML+=`<div class="coord-lbl">${c}</div>`;
+  const rn=document.getElementById('row-nums');
+  rn.innerHTML='';
+  for(let r=0;r<SIZE;r++) rn.innerHTML+=`<div class="row-num">${r}</div>`;
+  const grid=document.getElementById('board');
+  grid.innerHTML='';
+  for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++){
+    const el=document.createElement('div');
+    el.className='cell'; el.id=`c${r}_${c}`; el.onclick=()=>handleClick(r,c);
+    grid.appendChild(el);
+  }
+}
+
+function renderBoard(){
+  let s1=0,s2=0;
+  for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++){
+    const el=document.getElementById(`c${r}_${c}`), d=board[r][c];
+    el.className='cell';
+    if(d.bonus) el.classList.add('bonus');
+    if(d.trap) el.classList.add('trap');
+    if(d.player===1){el.classList.add('p1');s1++;}
+    if(d.player===2){el.classList.add('p2');s2++;}
+    if(selectedCell&&selectedCell[0]===r&&selectedCell[1]===c) el.classList.add('selected');
+    el.innerHTML=d.unit?pieceSVG(d.unit,d.player):'';
+  }
+  document.getElementById('s1').textContent=s1;
+  document.getElementById('s2').textContent=s2;
+  document.getElementById('prog-p1').style.width=Math.round((s1/81)*100)+'%';
+  document.getElementById('prog-p2').style.width=Math.round((s2/81)*100)+'%';
+
+  const h1=document.getElementById('half-p1'), h2=document.getElementById('half-p2');
+  h1.className='score-half p1'+(currentPlayer===1?' active-p1':'');
+  h2.className='score-half p2'+(currentPlayer===2?' active-p2':'');
+
+  return {s1,s2};
+}
+
+function showReachable(){
+  if(!selectedCell) return;
+  const [sr,sc]=selectedCell;
+  const stats=UNITS[board[sr][sc].unit];
+  for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++){
+    if(r===sr&&c===sc) continue;
+    const dr=Math.abs(r-sr),dc=Math.abs(c-sc),dist=dr+dc;
+    if((r===sr||c===sc)&&dist<=stats.maxStep&&dist<=movePoints&&board[r][c].player!==currentPlayer)
+      document.getElementById(`c${r}_${c}`).classList.add('reachable');
+  }
+}
+
+function handleClick(r,c){
+  if(!diceRolled){addLog('Lancez le dé d\'abord !','warn');return;}
+  if(selectedCell){
+    const[sr,sc]=selectedCell;
+    if(sr===r&&sc===c){selectedCell=null;renderBoard();return;}
+    processAction(sr,sc,r,c);
+  } else {
+    if(board[r][c].player===currentPlayer&&board[r][c].unit){selectedCell=[r,c];renderBoard();showReachable();}
+  }
+}
+
+function processAction(r1,c1,r2,c2){
+  const unit=board[r1][c1].unit,stats=UNITS[unit];
+  const dr=Math.abs(r1-r2),dc=Math.abs(c1-c2),dist=dr+dc;
+  if(!(r1===r2||c1===c2)||dist>stats.maxStep){
+    addLog(`❌ ${stats.label} : max ${stats.maxStep} case(s) en ligne droite.`,'warn');
+    selectedCell=null;renderBoard();return;
+  }
+  if(dist>movePoints){
+    addLog(`❌ Pas assez de points (besoin:${dist}, reste:${movePoints}).`,'warn');
+    selectedCell=null;renderBoard();return;
+  }
+  if(board[r2][c2].player!==0&&board[r2][c2].player!==currentPlayer) doCombat(r1,c1,r2,c2,dist);
+  else doMove(r1,c1,r2,c2,dist);
+  selectedCell=null; checkWin(); renderBoard();
+}
+
+function doCombat(r1,c1,r2,c2,cost){
+  const ab=board[r1][c1].bonus?1:0,db=board[r2][c2].bonus?1:0;
+  const ad=Math.ceil(Math.random()*6),dd=Math.ceil(Math.random()*6);
+  const ap=UNITS[board[r1][c1].unit].power+ad+ab;
+  const dp=UNITS[board[r2][c2].unit].power+dd+db;
+  const an=currentPlayer===1?'Alice':'Bob',dn=currentPlayer===1?'Bob':'Alice';
+  addLog(`⚔ ${an}:${ap} vs ${dn}:${dp}`,'combat');
+  if(ap>dp){addLog('✅ Victoire ! Case capturée.','capture');doMove(r1,c1,r2,c2,cost);}
+  else{addLog('💀 Défaite. Unité perdue.','warn');board[r1][c1].unit=null;board[r1][c1].player=0;movePoints-=cost;}
+  updateMoveUI();
+}
+
+function doMove(r1,c1,r2,c2,cost){
+  const unit=board[r1][c1].unit;
+  board[r2][c2].unit=unit;board[r2][c2].player=currentPlayer;
+  board[r1][c1].unit=null;board[r1][c1].player=0;
+  movePoints-=cost;
+  if(board[r2][c2].trap){addLog('⚠ PIÈGE ! Unité détruite.','warn');board[r2][c2].unit=null;board[r2][c2].player=0;}
+  else if(board[r2][c2].bonus) addLog('✦ Case Bonus !','capture');
+  else addLog('➡ Déplacement effectué.','info');
+  updateMoveUI();
+}
+
+async function rollMoveDice(){
+  if(diceRolled){addLog('Dé déjà lancé ce tour.','info');return;}
+  const val=Math.ceil(Math.random()*6);
+  await animateDice(val,'dice-pips');
+  movePoints=val; diceRolled=true;
+  document.getElementById('btn-end').disabled=false;
+  addLog(`🎲 Dé : ${val} point(s).`,'info');
+  updateMoveUI();
+}
+
+function updateMoveUI(){
+  document.getElementById('move-pts').textContent=Math.max(0,movePoints);
+  if(movePoints<=0&&diceRolled) addLog('Points épuisés → Fin du tour.','info');
+}
+
+function updateTurnUI(){
+  const name=currentPlayer===1?'Alice':'Bob',cls=currentPlayer===1?'p1':'p2';
+  const badge=document.getElementById('turn-badge');
+  badge.textContent=`Tour de ${name}`; badge.className=`turn-badge ${cls}`;
+  document.getElementById('move-pts').textContent='—';
+  document.getElementById('dice-pips').innerHTML='';
+}
+
+function endTurn(){
+  currentPlayer=currentPlayer===1?2:1;
+  movePoints=0;diceRolled=false;selectedCell=null;
+  document.getElementById('btn-end').disabled=true;
+  document.getElementById('dice-pips').innerHTML='';
+  addLog(`─── Tour de ${currentPlayer===1?'Alice':'Bob'} ───`,'turn');
+  updateTurnUI(); renderBoard();
+}
+
+function checkWin(){
+  let s1=0,s2=0,u1=0,u2=0;
+  for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++){
+    if(board[r][c].player===1){s1++;if(board[r][c].unit)u1++;}
+    if(board[r][c].player===2){s2++;if(board[r][c].unit)u2++;}
+  }
+  if(s1>=33||u2===0) showWin('Alice');
+  else if(s2>=33||u1===0) showWin('Bob');
+}
+
+function showWin(name){
+  document.getElementById('modal-content').innerHTML=`<div class="win-crown">👑</div><div class="win-name">${name} gagne !</div><p style="margin:10px 0 20px">Félicitations, la victoire est totale !</p><button class="btn-modal" onclick="location.reload()">Nouvelle partie</button>`;
+  document.getElementById('modal-backdrop').classList.add('show');
+}
+
+function addLog(msg,type='info'){
+  const el=document.getElementById('log');
+  const div=document.createElement('div');
+  div.className=`log-entry ${type}`;div.textContent=msg;el.prepend(div);
+}
+
+initBoard();
+</script>
+</body>
+</html>
