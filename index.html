@@ -242,6 +242,24 @@ html,body{height:100%;font-family:'Rajdhani',sans-serif;background:var(--bg);col
 .cell.start-zone-p2{background:rgba(155,93,229,0.06);border-color:rgba(155,93,229,0.28)}
 .cell.territory-p1::before{content:'';position:absolute;bottom:0;left:0;width:0;height:0;border-style:solid;border-width:0 0 7px 7px;border-color:transparent transparent rgba(232,88,138,0.65) transparent}
 .cell.territory-p2::before{content:'';position:absolute;bottom:0;left:0;width:0;height:0;border-style:solid;border-width:0 0 7px 7px;border-color:transparent transparent rgba(155,93,229,0.65) transparent}
+.cell.cell-fog{
+  background: rgba(120,60,180,0.07)!important;
+  border-color: rgba(155,93,229,0.2)!important;
+  animation: fog-pulse 3s ease-in-out infinite;
+}
+.cell.cell-fog::after{
+  content:'?';
+  position:absolute;
+  bottom:3px;right:4px;
+  font-size:9px;
+  font-weight:700;
+  color:rgba(155,93,229,0.35);
+  font-family:'Cinzel',serif;
+}
+@keyframes fog-pulse{
+  0%,100%{box-shadow:inset 0 0 6px rgba(155,93,229,0.06);}
+  50%{box-shadow:inset 0 0 12px rgba(155,93,229,0.14);}
+}
 .cell.selected{border:2px solid var(--rose)!important;box-shadow:0 0 20px rgba(232,88,138,0.6),inset 0 0 10px rgba(232,88,138,0.1)!important;z-index:5;transform:scale(1.07)}
 .cell.reachable{border:1.5px dashed rgba(232,88,138,0.52)!important;background:rgba(232,88,138,0.08)!important}
 .cell.place-valid{border:1.5px dashed rgba(78,222,128,0.55)!important;background:rgba(78,222,128,0.07)!important}
@@ -448,9 +466,9 @@ html,body{height:100%;font-family:'Rajdhani',sans-serif;background:var(--bg);col
     <div>
       <div class="divider"><div class="divider-line"></div><div class="divider-label">✦ Cases spéciales</div><div class="divider-line"></div></div>
       <div class="specials-row">
-        <div class="special-card"><div class="spc-icon" style="background:rgba(244,162,97,0.12);border:1px solid rgba(244,162,97,0.3)">✦</div><div><div class="spc-name">Case Bonus</div><div class="spc-desc">Octroie +1 force au combat pour l'unité qui l'occupe. Position stratégique clé !</div></div></div>
-        <div class="special-card"><div class="spc-icon" style="background:rgba(220,60,60,0.12);border:1px solid rgba(220,60,60,0.3)">✗</div><div><div class="spc-name">Piège</div><div class="spc-desc">Détruit instantanément toute unité qui y entre — adversaire ou alliée. Danger absolu !</div></div></div>
-        <div class="special-card"><div class="spc-icon" style="background:rgba(78,222,128,0.1);border:1px solid rgba(78,222,128,0.28)">◤</div><div><div class="spc-name">Zone de départ</div><div class="spc-desc">Zone colorée où placer vos unités avant la bataille. Chaque joueur commence dans son coin.</div></div></div>
+        <div class="special-card"><div class="spc-icon" style="background:rgba(244,162,97,0.12);border:1px solid rgba(244,162,97,0.3)">✦</div><div><div class="spc-name">Case Bonus</div><div class="spc-desc">Octroie +1 force au combat. <strong style="color:rgba(155,93,229,0.8)">Cachée</strong> jusqu'à ce qu'une unité s'en approche. Se déplace à chaque fin de tour !</div></div></div>
+        <div class="special-card"><div class="spc-icon" style="background:rgba(220,60,60,0.12);border:1px solid rgba(220,60,60,0.3)">✗</div><div><div class="spc-name">Piège</div><div class="spc-desc">Détruit toute unité qui entre dessus. <strong style="color:rgba(155,93,229,0.8)">Caché</strong> et repositionné aléatoirement à chaque tour. Danger invisible !</div></div></div>
+        <div class="special-card"><div class="spc-icon" style="background:rgba(155,93,229,0.1);border:1px solid rgba(155,93,229,0.28)">?</div><div><div class="spc-name">Case mystère</div><div class="spc-desc">Le <strong style="color:rgba(155,93,229,0.8)">?</strong> indique une case spéciale cachée à proximité. Approchez une unité pour la révéler !</div></div></div>
       </div>
     </div>
     <div class="rules-cta">
@@ -693,6 +711,7 @@ let SIZE = 8;
 let board = [], currentPlayer = 1, selectedCell = null;
 let movePoints = 0, diceRolled = false, startRolls = [0,0];
 let bonusCells = new Set(), trapCells = new Set();
+let revealedCells = new Set(); // cells whose special type has been revealed
 let initialUnits = { 1:[], 2:[] };
 let placedUnits = { 1:[], 2:[] };
 let killPoints = { 1:0, 2:0 };
@@ -743,6 +762,7 @@ function initGame(){
   placeUnitsLeft = { 1:[...dc.units], 2:[...dc.units] };
   placedUnits = { 1:[], 2:[] };
   killPoints = { 1:0, 2:0 };
+  revealedCells = new Set();
   currentPlayer = 1;
   placePlayer = 1;
   placementPhase = true;
@@ -769,18 +789,42 @@ function initGame(){
 }
 
 /* ══════════════════ BOARD DATA INIT ══════════════════ */
+let _bonusCount = 4, _trapCount = 4; // remembered for reshuffle
+
 function initBoardData(bonusCount, trapCount){
-  bonusCells=new Set(); trapCells=new Set();
-  for(let r=0;r<SIZE;r++){board[r]=[];for(let c=0;c<SIZE;c++){board[r][c]={player:0,owner:0,unit:null,bonus:false,trap:false,startZone:0};}}
+  _bonusCount = bonusCount; _trapCount = trapCount;
+  bonusCells=new Set(); trapCells=new Set(); revealedCells=new Set();
+  for(let r=0;r<SIZE;r++){board[r]=[];for(let c=0;c<SIZE;c++){board[r][c]={player:0,owner:0,unit:null,bonus:false,trap:false,startZone:0,bonusBuff:false};}}
   /* start zones: p1 top-left 2 rows, p2 bottom-right 2 rows */
   for(let r=0;r<2;r++)for(let c=0;c<Math.min(SIZE,Math.ceil(initialUnits[1].length/2)+1);c++)board[r][c].startZone=1;
   for(let r=SIZE-2;r<SIZE;r++)for(let c=Math.max(0,SIZE-Math.ceil(initialUnits[2].length/2)-1);c<SIZE;c++)board[r][c].startZone=2;
-  /* place bonus & trap cells in middle zone */
+  placeSpecials(bonusCount, trapCount);
+}
+
+function placeSpecials(bonusCount, trapCount){
+  /* clear old specials from board data */
+  for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE;c++){board[r][c].bonus=false;board[r][c].trap=false;}
+  bonusCells=new Set(); trapCells=new Set();
   const midMin=2,midMax=SIZE-3;
   const placed=new Set();
-  function rndMid(){let r,c,k;do{r=midMin+Math.floor(Math.random()*(midMax-midMin+1));c=midMin+Math.floor(Math.random()*(midMax-midMin+1));k=`${r},${c}`;}while(placed.has(k)||board[r][c].startZone);placed.add(k);return[r,c,k];}
+  /* never place on occupied cells */
+  function rndMid(){
+    let r,c,k,tries=0;
+    do{
+      r=midMin+Math.floor(Math.random()*(midMax-midMin+1));
+      c=midMin+Math.floor(Math.random()*(midMax-midMin+1));
+      k=`${r},${c}`;tries++;
+    }while((placed.has(k)||board[r][c].startZone||board[r][c].unit)&&tries<200);
+    placed.add(k);return[r,c,k];
+  }
   for(let i=0;i<bonusCount;i++){const[r,c,k]=rndMid();board[r][c].bonus=true;bonusCells.add(k);}
   for(let i=0;i<trapCount;i++){const[r,c,k]=rndMid();board[r][c].trap=true;trapCells.add(k);}
+}
+
+function reshuffleSpecials(){
+  placeSpecials(_bonusCount, _trapCount);
+  revealedCells = new Set(); // reset visibility — all hidden again
+  addLog('🌀 Les cases spéciales se sont déplacées…', 'info');
 }
 
 /* ══════════════════ PLACEMENT PHASE ══════════════════ */
@@ -788,6 +832,8 @@ function buildPlacementUI(){
   buildPlaceGrid();
   renderPlaceBoard();
   updatePlaceUI();
+  /* Si IA et c'est son tour de placer en premier */
+  if(CFG.mode==='ai'&&placePlayer===2)setTimeout(aiAutoPlace,600);
 }
 
 function buildPlaceGrid(){
@@ -814,12 +860,10 @@ function renderPlaceBoard(){
   for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE;c++){
     const el=document.getElementById(`pc${r}_${c}`);const d=board[r][c];
     el.className='cell';
-    if(d.bonus)el.classList.add('bonus');
-    if(d.trap)el.classList.add('trap');
+    /* specials are hidden during placement — revealed only in-game */
     if(d.owner===1)el.classList.add('territory-p1');
     else if(d.owner===2)el.classList.add('territory-p2');
     if(d.unit)el.classList.add('has-unit');
-    /* highlight valid placement zone */
     if(!d.unit && d.startZone===placePlayer && placeUnitsLeft[placePlayer].length>0){
       el.classList.add('place-valid');
     } else if(d.startZone===1&&placePlayer!==1)el.classList.add('start-zone-p1');
@@ -916,21 +960,51 @@ function buildGameGrid(){
   }
 }
 
+/* ══════════════════ REVEAL LOGIC ══════════════════ */
+function revealCellIfSpecial(r, c){
+  const k=`${r},${c}`;
+  if((board[r][c].bonus||board[r][c].trap)&&!revealedCells.has(k)){
+    revealedCells.add(k);
+    const type = board[r][c].bonus ? 'Bonus ✦' : 'Piège ✗';
+    addLog(`👁 Case (${r},${c}) révélée : ${type}`, 'info');
+  }
+}
+/* Reveal special cells adjacent (including diagonals) to all current units of a player */
+function revealAroundUnits(){
+  for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE;c++){
+    if(board[r][c].unit){
+      /* check the cell itself and 8 neighbors */
+      for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+        const nr=r+dr,nc=c+dc;
+        if(nr>=0&&nr<SIZE&&nc>=0&&nc<SIZE&&(board[nr][nc].bonus||board[nr][nc].trap)){
+          revealCellIfSpecial(nr,nc);
+        }
+      }
+    }
+  }
+}
+
 /* ══════════════════ RENDER BOARD + SCORE ══════════════════ */
 function renderBoard(){
+  revealAroundUnits();
   let s1=0,s2=0,u1=0,u2=0,b1=0,b2=0;
   const alive1=[],alive2=[];
   for(let r=0;r<SIZE;r++){
     for(let c=0;c<SIZE;c++){
       const el=document.getElementById(`c${r}_${c}`);const d=board[r][c];
+      const k=`${r},${c}`;
+      const isRevealed = revealedCells.has(k);
       el.className='cell';
-      if(d.bonus)el.classList.add('bonus');
-      if(d.trap)el.classList.add('trap');
+      /* show special markers only if revealed */
+      if(d.bonus && isRevealed) el.classList.add('bonus');
+      if(d.trap && isRevealed) el.classList.add('trap');
+      /* fog indicator: special but not yet revealed — subtle shimmer */
+      if((d.bonus||d.trap) && !isRevealed && !d.unit) el.classList.add('cell-fog');
       if(d.owner===1){el.classList.add('territory-p1');s1++;}
       else if(d.owner===2){el.classList.add('territory-p2');s2++;}
       if(d.unit)el.classList.add('has-unit');
       if(selectedCell&&selectedCell[0]===r&&selectedCell[1]===c)el.classList.add('selected');
-      el.innerHTML=d.unit?pieceSVG(d.unit,d.player):'';
+      el.innerHTML=d.unit?pieceSVG(d.unit,d.player)+(d.bonusBuff?'<span style="position:absolute;top:1px;left:2px;font-size:9px;z-index:4">⚡</span>':''):'';
       if(d.player===1&&d.unit){u1++;alive1.push(d.unit);if(d.bonus)b1++;}
       if(d.player===2&&d.unit){u2++;alive2.push(d.unit);if(d.bonus)b2++;}
     }
@@ -1049,7 +1123,7 @@ function processAction(r1,c1,r2,c2){
 /* ══════════════════ COMBAT ══════════════════ */
 function doCombat(r1,c1,r2,c2,cost){
   const aUnit=board[r1][c1].unit,dUnit=board[r2][c2].unit;
-  const ab=board[r1][c1].bonus?1:0,db=board[r2][c2].bonus?1:0;
+  const ab=board[r1][c1].bonusBuff?1:0,db=board[r2][c2].bonusBuff?1:0;
   const ad=Math.ceil(Math.random()*6),dd=Math.ceil(Math.random()*6);
   const aBase=UNITS[aUnit].power,dBase=UNITS[dUnit].power;
   const aTotal=aBase+ad+ab,dTotal=dBase+dd+db;
@@ -1072,9 +1146,12 @@ function doCombat(r1,c1,r2,c2,cost){
   if(attackerWins){
     const kpts=UNITS[dUnit].killPts;killPoints[currentPlayer]+=kpts;
     addLog(`✿ Victoire ${an} ! +${kpts} pts kill [${aTotal}>${dTotal}]`,'kill');
+    board[r1][c1].bonusBuff=false; // buff consumed
     doMove(r1,c1,r2,c2,cost);
   } else {
     addLog(`💀 ${an} perd. ${UNITS[aUnit].label} détruit [${aTotal}≤${dTotal}]`,'warn');
+    board[r1][c1].bonusBuff=false;
+    board[r2][c2].bonusBuff=false;
     board[r1][c1].unit=null;board[r1][c1].player=0;movePoints-=cost;
   }
   updateMoveUI();
@@ -1085,11 +1162,21 @@ function doMove(r1,c1,r2,c2,cost){
   board[r2][c2].unit=unit;board[r2][c2].player=currentPlayer;board[r2][c2].owner=currentPlayer;
   board[r1][c1].unit=null;board[r1][c1].player=0;
   movePoints-=cost;
+  /* apply special effect ONCE then destroy it */
   if(board[r2][c2].trap){
-    addLog('⚠ PIÈGE ! Unité détruite.','warn');
+    revealCellIfSpecial(r2,c2);
+    addLog('⚠ PIÈGE déclenché ! Unité détruite.','warn');
     board[r2][c2].unit=null;board[r2][c2].player=0;
+    board[r2][c2].trap=false;
+    trapCells.delete(`${r2},${c2}`);
+    revealedCells.delete(`${r2},${c2}`);
   } else if(board[r2][c2].bonus){
-    addLog(`✦ Case Bonus conquise par ${currentPlayer===1?CFG.p1:CFG.p2} !`,'capture');
+    revealCellIfSpecial(r2,c2);
+    addLog(`✦ Case Bonus activée par ${currentPlayer===1?CFG.p1:CFG.p2} ! (+1 force au prochain combat)`, 'capture');
+    board[r2][c2].bonus=false;
+    bonusCells.delete(`${r2},${c2}`);
+    revealedCells.delete(`${r2},${c2}`);
+    board[r2][c2].bonusBuff=true; // +1 force stocked on the unit's cell until it fights
   } else {
     addLog(`✿ Case conquise par ${currentPlayer===1?CFG.p1:CFG.p2}.`,'capture');
   }
@@ -1113,11 +1200,27 @@ async function rollMoveDice(){
 /* ══════════════════ STARTUP ROLLS ══════════════════ */
 async function startRoll(player){
   const val=Math.ceil(Math.random()*6);startRolls[player-1]=val;
-  if(player===1){document.getElementById('roll-p1').textContent=val;document.getElementById('btn-roll-p1').disabled=true;document.getElementById('btn-roll-p2').disabled=false;}
-  else{
+  if(player===1){
+    document.getElementById('roll-p1').textContent=val;
+    document.getElementById('btn-roll-p1').disabled=true;
+    /* Si mode IA, le joueur 2 lance automatiquement */
+    if(CFG.mode==='ai'){
+      setTimeout(()=>startRoll(2),600);
+    } else {
+      document.getElementById('btn-roll-p2').disabled=false;
+    }
+  } else {
     document.getElementById('roll-p2').textContent=val;document.getElementById('btn-roll-p2').disabled=true;
     const a=startRolls[0],b=startRolls[1];
-    if(a===b){document.getElementById('roll-p1').textContent='—';document.getElementById('roll-p2').textContent='—';startRolls=[0,0];document.getElementById('btn-roll-p1').disabled=false;document.getElementById('btn-roll-p2').disabled=true;addLog('Égalité ! Relancez.','warn');return;}
+    if(a===b){
+      document.getElementById('roll-p1').textContent='—';document.getElementById('roll-p2').textContent='—';
+      startRolls=[0,0];
+      document.getElementById('btn-roll-p1').disabled=false;
+      if(CFG.mode!=='ai')document.getElementById('btn-roll-p2').disabled=true;
+      addLog('Égalité ! Relancez.','warn');
+      if(CFG.mode==='ai')setTimeout(()=>startRoll(1),400);
+      return;
+    }
     currentPlayer=a>b?1:2;const winner=a>b?CFG.p1:CFG.p2;
     setTimeout(()=>{const p=document.createElement('p');p.className='winner-msg';p.style.cssText='color:var(--rose);font-size:1rem;margin:10px 0;font-weight:700;font-family:Cinzel,serif;letter-spacing:0.06em';p.textContent=`⚔ ${winner} commence !`;const mc=document.getElementById('modal-content');const bs=document.getElementById('btn-start');mc.insertBefore(p,bs);bs.style.display='block';},300);
   }
@@ -1127,7 +1230,11 @@ function startGame(){
   document.getElementById('modal-backdrop').classList.remove('show');
   addLog(`Partie lancée ! Tour : ${currentPlayer===1?CFG.p1:CFG.p2}`,'turn');
   updateTurnUI();
-  startTimer();
+  if(CFG.mode==='ai'&&currentPlayer===2){
+    setTimeout(aiPlayTurn,800);
+  } else {
+    startTimer();
+  }
 }
 
 /* ══════════════════ UI UPDATES ══════════════════ */
@@ -1169,9 +1276,15 @@ function endTurn(){
   document.getElementById('btn-end').disabled=true;
   document.getElementById('dice-pips').innerHTML='';
   document.getElementById('move-warning').textContent='';
+  reshuffleSpecials();
   addLog(`─── Tour de ${currentPlayer===1?CFG.p1:CFG.p2} ───`,'turn');
   updateTurnUI();renderBoard();
-  startTimer();
+  if(CFG.mode==='ai'&&currentPlayer===2){
+    /* IA joue automatiquement */
+    setTimeout(aiPlayTurn,600);
+  } else {
+    startTimer();
+  }
 }
 
 /* ══════════════════ WIN CHECK ══════════════════ */
@@ -1204,6 +1317,168 @@ function showWin(name,s1,s2){
 function replayGame(){
   document.getElementById('modal-backdrop').classList.remove('show');
   initGame();
+}
+
+/* ══════════════════ IA ══════════════════ */
+
+/* --- Placement automatique de l'IA --- */
+function aiAutoPlace(){
+  if(placeUnitsLeft[2].length===0){finishPlacement();return;}
+  /* Trouver toutes les cases valides pour le joueur 2 */
+  const validCells=[];
+  for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE;c++){
+    if(board[r][c].startZone===2&&!board[r][c].unit)validCells.push([r,c]);
+  }
+  if(validCells.length===0){finishPlacement();return;}
+  /* Choisir la case et l'unité */
+  const [r,c]=validCells[Math.floor(Math.random()*validCells.length)];
+  const unitType=placeUnitsLeft[2][0];
+  placeUnitsLeft[2].shift();
+  board[r][c].unit=unitType;board[r][c].player=2;board[r][c].owner=2;
+  placedUnits[2].push(unitType);
+  addPlaceLog(`🤖 ${CFG.p2} place ${UNITS[unitType].label} en (${r},${c})`);
+
+  /* Tous placés ? */
+  if(placeUnitsLeft[1].length===0&&placeUnitsLeft[2].length===0){finishPlacement();return;}
+
+  /* Passer au joueur humain s'il reste des unités */
+  placePlayer=1;
+  if(placeUnitsLeft[1].length===0){
+    placePlayer=2;
+    setTimeout(aiAutoPlace,500);
+  } else {
+    if(placeUnitsLeft[1].length>0)placeUnitType=placeUnitsLeft[1][0];
+    renderPlaceBoard();updatePlaceUI();
+  }
+}
+
+/* --- Tour complet de l'IA --- */
+function aiPlayTurn(){
+  if(currentPlayer!==2||CFG.mode!=='ai')return;
+  addLog('🤖 L\'ordinateur réfléchit…','info');
+  const level=CFG.aiLevel; // 'ai-easy' | 'ai-medium' | 'ai-hard'
+
+  /* 1. Lancer le dé */
+  const diceVal=Math.ceil(Math.random()*6);
+  movePoints=diceVal;diceRolled=true;
+  animateDice(diceVal,'dice-pips');
+  addLog(`🎲 Dé IA : ${diceVal} point(s).`,'info');
+  updateMoveUI();
+
+  /* 2. Construire la liste de tous les mouvements possibles */
+  setTimeout(()=>{
+    let remaining=movePoints;
+    let moved=true;
+    while(moved&&remaining>0){
+      moved=false;
+      const move=aiFindBestMove(remaining,level);
+      if(move){
+        const{r1,c1,r2,c2,dist}=move;
+        /* Simuler le mouvement/combat */
+        if(board[r2][c2].player!==0&&board[r2][c2].player!==2){
+          /* Combat */
+          doCombat(r1,c1,r2,c2,dist);
+        } else {
+          doMove(r1,c1,r2,c2,dist);
+        }
+        selectedCell=null;
+        checkWin();
+        renderBoard();
+        remaining=movePoints;
+        moved=true;
+      }
+    }
+    /* Fin du tour IA */
+    setTimeout(()=>{endTurn();},500);
+  }, 800);
+}
+
+/* --- Trouver le meilleur mouvement selon le niveau --- */
+function aiFindBestMove(pts, level){
+  const moves=aiGetAllMoves(2,pts);
+  if(moves.length===0)return null;
+
+  if(level==='ai-easy'){
+    /* Facile : mouvement totalement aléatoire */
+    return moves[Math.floor(Math.random()*moves.length)];
+  }
+
+  if(level==='ai-medium'){
+    /* Moyen : priorise attaque > bonus > case neutre */
+    const attacks=moves.filter(m=>board[m.r2][m.c2].player===1);
+    if(attacks.length>0){
+      /* Attaque : préférer la cible la plus faible */
+      attacks.sort((a,b)=>UNITS[board[b.r2][b.c2].unit].killPts-UNITS[board[a.r2][a.c2].unit].killPts);
+      return attacks[0];
+    }
+    const bonusMoves=moves.filter(m=>board[m.r2][m.c2].bonus);
+    if(bonusMoves.length>0)return bonusMoves[0];
+    const neutral=moves.filter(m=>board[m.r2][m.c2].owner===0);
+    if(neutral.length>0)return neutral[Math.floor(Math.random()*neutral.length)];
+    return moves[Math.floor(Math.random()*moves.length)];
+  }
+
+  if(level==='ai-hard'){
+    /* Expert : score chaque mouvement */
+    let best=null,bestScore=-Infinity;
+    for(const m of moves){
+      let score=0;
+      const target=board[m.r2][m.c2];
+      if(target.player===1){
+        /* Attaque — probabilité de gagner × valeur kill */
+        const myPow=UNITS[board[m.r1][m.c1].unit].power+(board[m.r1][m.c1].bonusBuff?1:0);
+        const enPow=UNITS[target.unit].power+(target.bonusBuff?1:0);
+        const winProb=Math.max(0.1,Math.min(0.9,(myPow-enPow+3.5)/7));
+        score=winProb*UNITS[target.unit].killPts*10;
+      } else if(target.bonus){
+        score=8; // bonus = bonne cible
+      } else if(target.trap){
+        score=-50; // éviter les pièges connus
+      } else if(target.owner===0){
+        score=3; // territoire neutre
+        /* Bonus si proche du centre ou de l'ennemi */
+        const distCenter=Math.abs(m.r2-SIZE/2)+Math.abs(m.c2-SIZE/2);
+        score+=Math.max(0,4-distCenter*0.5);
+      } else if(target.owner===1){
+        score=5; // reprendre territoire ennemi
+      }
+      /* Pénalité si on s'expose à un ennemi */
+      score-=aiExposureRisk(m.r2,m.c2)*2;
+      if(score>bestScore){bestScore=score;best=m;}
+    }
+    return best||moves[0];
+  }
+  return moves[0];
+}
+
+/* --- Lister tous les mouvements valides d'un joueur --- */
+function aiGetAllMoves(player,pts){
+  const moves=[];
+  for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE;c++){
+    if(board[r][c].player!==player||!board[r][c].unit)continue;
+    const maxStep=UNITS[board[r][c].unit].maxStep;
+    const reach=Math.min(maxStep,pts);
+    for(const[dr,dc]of[[0,1],[0,-1],[1,0],[-1,0]]){
+      for(let d=1;d<=reach;d++){
+        const nr=r+dr*d,nc=c+dc*d;
+        if(nr<0||nr>=SIZE||nc<0||nc>=SIZE)break;
+        if(board[nr][nc].player===player)break; // bloqué par allié
+        moves.push({r1:r,c1:c,r2:nr,c2:nc,dist:d});
+        if(board[nr][nc].player!==0)break; // après ennemi, stop
+      }
+    }
+  }
+  return moves;
+}
+
+/* --- Risque d'exposition : nombre d'ennemis adjacents à (r,c) --- */
+function aiExposureRisk(r,c){
+  let risk=0;
+  for(const[dr,dc]of[[0,1],[0,-1],[1,0],[-1,0]]){
+    const nr=r+dr,nc=c+dc;
+    if(nr>=0&&nr<SIZE&&nc>=0&&nc<SIZE&&board[nr][nc].player===1)risk++;
+  }
+  return risk;
 }
 
 /* ══════════════════ LOG ══════════════════ */
