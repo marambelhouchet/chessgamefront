@@ -1,0 +1,12 @@
+/* ══════════════════ TIMER ══════════════════ */
+.timer-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;position:relative}
+.timer-ring{position:relative;width:48px;height:48px}
+.timer-ring svg{transform:rotate(-90deg)}
+.timer-ring .ring-bg{fill:none;stroke:rgba(255,255,255,0.08);stroke-width:3}
+.timer-ring .ring-fill{fill:none;stroke:var(--timer-color);stroke-width:3;stroke-linecap:round;transition:stroke-dashoffset 1s linear,stroke 0.5s}
+.timer-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:0.85rem;font-weight:700;color:var(--timer-color);transition:color 0.5s}
+.timer-num.urgent{color:#ff4040;animation:pulse 0.5s ease-in-out infinite alternate}
+@keyframes pulse{to{opacity:0.5}}
+.timer-label{font-size:0.55rem;color:var(--dim);letter-spacing:0.08em;text-transform:uppercase}
+.timer-disabled .timer-num{color:var(--dim)}
+.timer-disabled .ring-fill{stroke:var(--dim)}

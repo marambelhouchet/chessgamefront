@@ -1,0 +1,39 @@
+<div id="place-screen" class="screen">
+  <div class="place-header">
+    <button class="gh-back" onclick="showSetup()">← Config</button>
+    <div class="place-title">Phase de Placement</div>
+    <div style="width:80px"></div>
+  </div>
+  <div class="place-info">
+    <div>
+      <div class="pi-player p1" id="place-player-name">Alice</div>
+      <div class="pi-sub" id="place-sub">Cliquez une case verte pour placer votre unité</div>
+    </div>
+    <div class="pi-units-left">
+      <div class="pi-count" id="place-count">5</div>
+      <div class="pi-units-sub">unités restantes</div>
+    </div>
+  </div>
+
+  <!-- Unit picker -->
+  <div class="unit-picker" id="unit-picker"></div>
+
+  <div class="place-main">
+    <div class="panel" style="width:190px">
+      <div class="panel-title">Journal</div>
+      <div id="place-log" class="place-log"></div>
+    </div>
+    <div class="board-wrap">
+      <div style="display:flex;gap:2px">
+        <div style="display:flex;flex-direction:column;gap:0;padding-top:24px">
+          <div id="place-row-nums" class="row-nums"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <div class="coord-row" id="place-col-coords"></div>
+          <div id="place-board"></div>
+        </div>
+      </div>
+    </div>
+    <div style="width:190px"></div>
+  </div>
+</div>

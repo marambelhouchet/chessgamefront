@@ -1,0 +1,153 @@
+<div id="game-screen" class="screen">
+  <div class="game-header">
+    <button class="gh-back" onclick="showSetup()">← Config</button>
+    <div class="gh-title">⚔ Conquête des Territoires</div>
+    <!-- TIMER -->
+    <div class="timer-wrap" id="timer-wrap">
+      <div class="timer-ring">
+        <svg width="48" height="48" viewBox="0 0 48 48">
+          <circle class="ring-bg" cx="24" cy="24" r="20"/>
+          <circle class="ring-fill" id="ring-fill" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-num" id="timer-num">—</div>
+      </div>
+      <div class="timer-label">sec</div>
+    </div>
+  </div>
+
+  <div style="padding:0 14px;position:relative;z-index:1">
+    <div class="score-panel">
+      <div class="dom-bar-wrap">
+        <div class="dom-labels">
+          <span class="dl" id="dom-lbl-p1">Alice — 0 cases · 0 pts kill</span>
+          <span class="dr" id="dom-lbl-p2">0 pts kill · 0 cases — Bob</span>
+        </div>
+        <div class="dom-track">
+          <div class="dom-fill-p1" id="dom-fill-p1" style="width:6%"></div>
+          <div class="dom-fill-p2" id="dom-fill-p2" style="width:6%"></div>
+        </div>
+        <div class="dom-foot">
+          <span id="dom-lead">Équilibre parfait</span>
+          <span id="dom-win-goal">33 cases pour gagner</span>
+        </div>
+      </div>
+      <div class="win-race">
+        <div class="wr-title" id="wr-title">course vers la victoire · 33 cases</div>
+        <div class="wr-row p1c">
+          <div class="wr-name" id="wr-name-p1">Alice</div>
+          <div class="wr-track"><div class="wr-fill p1f" id="wr-p1" style="width:2%"><span class="wr-fill-n" id="wr-n-p1">0</span></div></div>
+          <div class="wr-goal" id="wr-goal">/ 33</div>
+        </div>
+        <div class="wr-row p2c">
+          <div class="wr-name" id="wr-name-p2">Bob</div>
+          <div class="wr-track"><div class="wr-fill p2f" id="wr-p2" style="width:2%"><span class="wr-fill-n" id="wr-n-p2">0</span></div></div>
+          <div class="wr-goal" id="wr-goal2">/ 33</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-main">
+    <!-- GAUCHE : cartes joueurs -->
+    <div class="left-panel">
+      <div class="pcard p1 active" id="pcard-p1">
+        <div class="pc-top">
+          <div class="pc-avatar p1" id="av-p1">A</div>
+          <div>
+            <div class="pc-name" id="pc-name-p1">Alice</div>
+            <span class="pc-turn-badge p1" id="badge-p1">▶ EN JEU</span>
+          </div>
+        </div>
+        <div class="pc-numbers">
+          <div class="pc-num-box"><div class="pc-num-big" id="score-terr-p1">0</div><div class="pc-num-sub">cases</div></div>
+          <div class="pc-num-box"><div class="pc-num-big gold" id="score-kill-p1">0</div><div class="pc-num-sub">kill pts</div></div>
+          <div class="pc-num-box"><div class="pc-num-big" id="score-total-p1">0</div><div class="pc-num-sub">total</div></div>
+        </div>
+        <div class="pc-stats p1">
+          <div class="pc-stat-row"><span class="pc-stat-lbl">Unités vivantes</span><span class="pc-stat-val" id="units-p1">5 / 5</span></div>
+          <div class="pc-mini-bar"><div class="pc-mini-fill" id="ubar-p1" style="width:100%"></div></div>
+          <div class="pc-stat-row"><span class="pc-stat-lbl">Bonus occupés</span><span class="pc-stat-val" id="bonus-p1">0</span></div>
+          <div class="pc-stat-row"><span class="pc-stat-lbl">Vers victoire</span><span class="pc-stat-val" id="prog-p1-pct">0%</span></div>
+          <div class="pc-mini-bar"><div class="pc-mini-fill" id="pbar-p1" style="width:0%"></div></div>
+          <div style="margin-top:2px;font-size:0.58rem;color:var(--dim)">Unités (force · pts kill) :</div>
+          <div class="unit-pips" id="pips-p1"></div>
+        </div>
+      </div>
+
+      <div class="score-vs-mid" style="flex-direction:row;justify-content:center;padding:4px 0">
+        <div class="vs-line" style="width:30%;height:1px;background:linear-gradient(90deg,transparent,rgba(232,88,138,0.18),transparent)"></div>
+        <div class="vs-lbl" style="padding:0 8px">VS</div>
+        <div class="vs-line" style="width:30%;height:1px;background:linear-gradient(90deg,transparent,rgba(232,88,138,0.18),transparent)"></div>
+      </div>
+
+      <div class="pcard p2" id="pcard-p2">
+        <div class="pc-top">
+          <div class="pc-avatar p2" id="av-p2">B</div>
+          <div>
+            <div class="pc-name" id="pc-name-p2">Bob</div>
+            <span class="pc-turn-badge wait" id="badge-p2">attend…</span>
+          </div>
+        </div>
+        <div class="pc-numbers">
+          <div class="pc-num-box"><div class="pc-num-big" id="score-terr-p2">0</div><div class="pc-num-sub">cases</div></div>
+          <div class="pc-num-box"><div class="pc-num-big gold" id="score-kill-p2">0</div><div class="pc-num-sub">kill pts</div></div>
+          <div class="pc-num-box"><div class="pc-num-big" id="score-total-p2">0</div><div class="pc-num-sub">total</div></div>
+        </div>
+        <div class="pc-stats p2">
+          <div class="pc-stat-row"><span class="pc-stat-lbl">Unités vivantes</span><span class="pc-stat-val" id="units-p2">5 / 5</span></div>
+          <div class="pc-mini-bar"><div class="pc-mini-fill" id="ubar-p2" style="width:100%"></div></div>
+          <div class="pc-stat-row"><span class="pc-stat-lbl">Bonus occupés</span><span class="pc-stat-val" id="bonus-p2">0</span></div>
+          <div class="pc-stat-row"><span class="pc-stat-lbl">Vers victoire</span><span class="pc-stat-val" id="prog-p2-pct">0%</span></div>
+          <div class="pc-mini-bar"><div class="pc-mini-fill" id="pbar-p2" style="width:0%"></div></div>
+          <div style="margin-top:2px;font-size:0.58rem;color:var(--dim)">Unités (force · pts kill) :</div>
+          <div class="unit-pips" id="pips-p2"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CENTRE : map -->
+    <div class="board-wrap">
+      <div style="display:flex;gap:2px">
+        <div style="display:flex;flex-direction:column;gap:0;padding-top:24px">
+          <div id="row-nums" class="row-nums"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <div class="coord-row" id="col-coords"></div>
+          <div id="board"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DROITE : dé + journal -->
+    <div class="right-panel">
+      <div class="panel">
+        <div class="panel-title">Tour actuel</div>
+        <div style="text-align:center">
+          <div class="turn-badge p1" id="turn-badge">Tour d'Alice</div>
+          <div class="move-display" id="move-pts">—</div>
+          <div class="move-sub">points de mouvement</div>
+          <div class="dice-area">
+            <svg id="dice-svg" width="54" height="54" viewBox="0 0 58 58" onclick="rollMoveDice()" role="button" aria-label="Lancer le dé">
+              <defs>
+                <linearGradient id="dg" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="rgba(232,88,138,0.26)"/>
+                  <stop offset="100%" stop-color="rgba(155,93,229,0.16)"/>
+                </linearGradient>
+              </defs>
+              <rect x="2" y="2" width="54" height="54" rx="14" fill="url(#dg)" stroke="#e8588a" stroke-width="1.5"/>
+              <rect x="4" y="4" width="50" height="24" rx="10" fill="rgba(255,255,255,0.05)"/>
+              <g id="dice-pips" fill="#e8588a"></g>
+            </svg>
+            <div class="dice-hint">Cliquez pour lancer</div>
+          </div>
+          <button class="btn btn-end" id="btn-end" onclick="endTurn()" disabled>Fin du tour →</button>
+          <div class="move-warn" id="move-warning"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Journal de jeu</div>
+        <div id="log"></div>
+      </div>
+    </div>
+  </div>
+</div>

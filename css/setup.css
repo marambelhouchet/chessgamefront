@@ -1,0 +1,34 @@
+/* ══════════════════ SETUP SCREEN ══════════════════ */
+#setup-screen{align-items:center;justify-content:center;padding:40px 20px;position:relative}
+.setup-box{width:100%;max-width:780px;position:relative;z-index:1}
+.setup-hero{text-align:center;margin-bottom:40px}
+.setup-hero .ornament{font-size:2rem;background:linear-gradient(135deg,#f4a261,#e8588a,#b060e8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block;margin-bottom:14px}
+.setup-hero h1{font-family:'Cinzel',serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;letter-spacing:0.1em;background:linear-gradient(135deg,#ffd0e8 0%,#e8588a 45%,#b060e8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.15;margin-bottom:8px}
+.setup-hero p{font-size:0.82rem;color:var(--muted);letter-spacing:0.18em;text-transform:uppercase;font-weight:600}
+.setup-section{background:rgba(255,255,255,0.03);border:1px solid rgba(232,88,138,0.15);border-radius:18px;padding:22px 24px;margin-bottom:16px}
+.setup-section h3{font-family:'Cinzel',serif;font-size:0.7rem;letter-spacing:0.2em;color:var(--rose);text-transform:uppercase;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(232,88,138,0.15)}
+.option-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.opt-btn{padding:12px 10px;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;color:var(--text);cursor:pointer;text-align:center;transition:all 0.22s;position:relative;overflow:hidden}
+.opt-btn .opt-label{font-family:'Cinzel',serif;font-size:0.78rem;font-weight:700;letter-spacing:0.06em;display:block;margin-bottom:3px}
+.opt-btn .opt-sub{font-size:0.65rem;color:var(--muted);line-height:1.4}
+.opt-btn:hover{border-color:rgba(232,88,138,0.5);background:rgba(232,88,138,0.06)}
+.opt-btn.selected{border-color:var(--rose);background:rgba(232,88,138,0.12);box-shadow:0 0 18px rgba(232,88,138,0.2)}
+.opt-btn.selected .opt-label{color:var(--rose)}
+.opt-btn.sel-v{border-color:var(--violet);background:rgba(155,93,229,0.12)}
+.opt-btn.sel-v .opt-label{color:var(--violet)}
+.opt-btn.sel-g{border-color:var(--gold);background:rgba(244,162,97,0.1)}
+.opt-btn.sel-g .opt-label{color:var(--gold)}
+.players-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.player-input-box{background:rgba(255,255,255,0.04);border:1px solid rgba(232,88,138,0.2);border-radius:12px;padding:14px}
+.player-input-box.p2{border-color:rgba(155,93,229,0.2)}
+.pib-label{font-size:0.65rem;letter-spacing:0.15em;font-weight:700;text-transform:uppercase;margin-bottom:8px}
+.pib-label.p1{color:var(--rose)}.pib-label.p2{color:var(--violet)}
+.pib-input{width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:0.9rem;font-weight:600;outline:none;transition:border-color 0.2s}
+.pib-input:focus{border-color:rgba(232,88,138,0.5)}
+.pib-input::placeholder{color:rgba(138,112,144,0.7);font-weight:400}
+.start-row{display:flex;gap:12px;justify-content:center;margin-top:24px}
+.big-btn{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#e8588a 0%,#c23b6a 100%);color:white;border:none;border-radius:50px;padding:18px 44px;font-family:'Cinzel',serif;font-size:1rem;font-weight:700;letter-spacing:0.1em;cursor:pointer;box-shadow:0 8px 36px rgba(232,88,138,0.42),inset 0 1px 0 rgba(255,255,255,0.18);transition:all 0.25s;position:relative;overflow:hidden}
+.big-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.16) 0%,transparent 55%);pointer-events:none}
+.big-btn:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 14px 50px rgba(232,88,138,0.6)}
+.rules-link{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:50px;padding:18px 32px;color:var(--muted);font-family:'Cinzel',serif;font-size:0.82rem;font-weight:700;letter-spacing:0.08em;cursor:pointer;transition:all 0.2s}
+.rules-link:hover{background:rgba(255,255,255,0.08);color:var(--text)}

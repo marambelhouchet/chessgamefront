@@ -1,0 +1,35 @@
+/* ══════════════════ RULES SCREEN ══════════════════ */
+#rules-screen{background:var(--bg);align-items:center;padding-bottom:80px;position:relative}
+.rules-hero{width:100%;text-align:center;padding:56px 24px 40px;position:relative;z-index:1}
+.hero-ornament{font-size:2.2rem;display:block;margin-bottom:14px;background:linear-gradient(135deg,#f4a261,#e8588a,#b060e8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.rules-hero h1{font-family:'Cinzel',serif;font-size:clamp(1.8rem,5vw,3rem);font-weight:700;letter-spacing:0.1em;background:linear-gradient(135deg,#ffd0e8 0%,#e8588a 45%,#b060e8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:12px;line-height:1.1}
+.rules-hero p{font-size:0.82rem;color:var(--muted);letter-spacing:0.2em;text-transform:uppercase;font-weight:600}
+.divider{display:flex;align-items:center;gap:16px;width:100%;max-width:900px;margin:0 auto 24px;padding:0 24px;position:relative;z-index:1}
+.divider-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(232,88,138,0.4),transparent)}
+.divider-label{font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--rose);white-space:nowrap}
+.rules-content{width:100%;max-width:920px;padding:0 24px;display:flex;flex-direction:column;gap:24px;position:relative;z-index:1;margin:0 auto}
+.rules-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.rule-card{background:rgba(255,255,255,0.03);border:1px solid rgba(232,88,138,0.16);border-radius:14px;padding:20px 18px;display:flex;gap:14px;align-items:flex-start;transition:all 0.22s}
+.rule-card:hover{border-color:rgba(232,88,138,0.42);background:rgba(232,88,138,0.06);transform:translateY(-2px)}
+.rule-icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(232,88,138,0.18),rgba(155,93,229,0.12));border:1px solid rgba(232,88,138,0.28);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.rule-title{font-size:0.88rem;font-weight:700;color:#f0d8e8;margin-bottom:4px;font-family:'Cinzel',serif;letter-spacing:0.04em}
+.rule-desc{font-size:0.74rem;color:var(--muted);line-height:1.65}
+.units-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.unit-card{background:rgba(255,255,255,0.03);border:1px solid rgba(155,93,229,0.18);border-radius:16px;padding:22px 18px 18px;text-align:center;transition:all 0.22s;position:relative;overflow:hidden}
+.unit-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(155,93,229,0.07) 0%,transparent 70%);pointer-events:none}
+.unit-card:hover{border-color:rgba(155,93,229,0.48);transform:translateY(-3px);box-shadow:0 10px 36px rgba(155,93,229,0.16)}
+.unit-3d-wrap{width:90px;height:90px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center}
+.unit-name{font-family:'Cinzel',serif;font-size:0.9rem;font-weight:700;color:#e8d0f8;margin-bottom:4px}
+.unit-lore{font-size:0.72rem;color:var(--muted);line-height:1.6;margin-bottom:9px}
+.unit-badges{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.ubadge{font-size:0.65rem;padding:3px 11px;border-radius:20px;font-weight:700;letter-spacing:0.03em}
+.ubadge.move{background:rgba(232,88,138,0.16);color:#e8588a;border:1px solid rgba(232,88,138,0.32)}
+.ubadge.pow{background:rgba(155,93,229,0.16);color:#c090f0;border:1px solid rgba(155,93,229,0.32)}
+.ubadge.pts{background:rgba(244,162,97,0.16);color:#f4a261;border:1px solid rgba(244,162,97,0.32)}
+.specials-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.special-card{background:rgba(255,255,255,0.03);border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px;border:1px solid rgba(255,255,255,0.07);transition:all 0.2s}
+.special-card:hover{background:rgba(255,255,255,0.05);transform:translateY(-1px)}
+.spc-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0}
+.spc-name{font-size:0.85rem;color:#f0d8e8;font-weight:700;margin-bottom:2px;font-family:'Cinzel',serif;letter-spacing:0.04em}
+.spc-desc{font-size:0.72rem;color:var(--muted);line-height:1.5}
+.rules-cta{display:flex;justify-content:center;padding-top:8px}

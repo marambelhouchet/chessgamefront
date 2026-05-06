@@ -1,0 +1,54 @@
+<div id="rules-screen" class="screen">
+  <div class="rules-hero">
+    <span class="hero-ornament">⚔ ✦ ⚔</span>
+    <h1>Conquête des Territoires</h1>
+    <p>Règles du jeu</p>
+  </div>
+  <div class="rules-content">
+    <div>
+      <div class="divider">
+        <div class="divider-line"></div>
+        <div class="divider-label">⚔ Comment jouer</div>
+        <div class="divider-line"></div>
+      </div>
+      <div class="rules-grid">
+        <div class="rule-card"><div class="rule-icon">🎲</div><div><div class="rule-title">Lancer le dé</div><div class="rule-desc">Chaque tour, cliquez le dé pour obtenir vos points de mouvement (1 à 6). Ils définissent le nombre de cases parcourues ce tour.</div></div></div>
+        <div class="rule-card"><div class="rule-icon">👆</div><div><div class="rule-title">Sélectionner &amp; Déplacer</div><div class="rule-desc">Cliquez une unité pour la sélectionner — les cases accessibles s'illuminent en pointillés. Cliquez la destination pour vous déplacer.</div></div></div>
+        <div class="rule-card"><div class="rule-icon">📐</div><div><div class="rule-title">Mouvement en ligne droite</div><div class="rule-desc">Déplacements horizontaux ou verticaux uniquement. Aucune diagonale. Le Cavalier peut aller de 1 ou 2 cases dans une même direction.</div></div></div>
+        <div class="rule-card"><div class="rule-icon">⚔</div><div><div class="rule-title">Combat</div><div class="rule-desc">Déplacez-vous sur une unité ennemie. Chacun lance un dé + force de base (+ 1 si case Bonus). Le total le plus élevé gagne. Égalité = départage par score.</div></div></div>
+        <div class="rule-card"><div class="rule-icon">🏆</div><div><div class="rule-title">Condition de victoire</div><div class="rule-desc">Contrôler plus de 50 % des cases ou éliminer toutes les unités adverses. Les kills rapportent des points bonus !</div></div></div>
+        <div class="rule-card"><div class="rule-icon">🧩</div><div><div class="rule-title">Placement des unités</div><div class="rule-desc">Avant la bataille, chaque joueur place ses unités à tour de rôle dans sa zone de départ (coins colorés). Choisissez stratégiquement !</div></div></div>
+        <div class="rule-card"><div class="rule-icon">⏱</div><div><div class="rule-title">Timer par tour</div><div class="rule-desc">Si un timer est activé, le tour se termine automatiquement à 0. L'unité sélectionnée reste sur place. Jouez vite !</div></div></div>
+        <div class="rule-card"><div class="rule-icon">💀</div><div><div class="rule-title">Points de kill</div><div class="rule-desc">Tank = <strong style="color:var(--gold)">5 pts</strong>, Cavalier = <strong style="color:var(--rose)">3 pts</strong>, Soldat = <strong style="color:var(--muted)">2 pts</strong>. S'ajoutent à votre score total.</div></div></div>
+      </div>
+    </div>
+    <div>
+      <div class="divider">
+        <div class="divider-line"></div>
+        <div class="divider-label">🗡 Les unités</div>
+        <div class="divider-line"></div>
+      </div>
+      <div class="units-row">
+        <div class="unit-card"><div class="unit-3d-wrap" id="ru-s"></div><div class="unit-name">Soldat</div><div class="unit-lore">Fiable et polyvalent, parfait pour tenir les lignes et sécuriser le territoire conquis.</div><div class="unit-badges"><span class="ubadge move">1 case</span><span class="ubadge pow">Force 2</span><span class="ubadge pts">Kill = 2 pts</span></div></div>
+        <div class="unit-card"><div class="unit-3d-wrap" id="ru-c"></div><div class="unit-name">Cavalier</div><div class="unit-lore">Rapide et agile, il s'élance sur 1 ou 2 cases pour surprendre et déborder l'ennemi.</div><div class="unit-badges"><span class="ubadge move">1–2 cases</span><span class="ubadge pow">Force 1</span><span class="ubadge pts">Kill = 3 pts</span></div></div>
+        <div class="unit-card"><div class="unit-3d-wrap" id="ru-t"></div><div class="unit-name">Tank</div><div class="unit-lore">La puissance brute incarnée. Sa force au combat est imbattable, mais il avance lentement.</div><div class="unit-badges"><span class="ubadge move">1 case</span><span class="ubadge pow">Force 3</span><span class="ubadge pts">Kill = 5 pts</span></div></div>
+      </div>
+    </div>
+    <div>
+      <div class="divider">
+        <div class="divider-line"></div>
+        <div class="divider-label">✦ Cases spéciales</div>
+        <div class="divider-line"></div>
+      </div>
+      <div class="specials-row">
+        <div class="special-card"><div class="spc-icon" style="background:rgba(244,162,97,0.12);border:1px solid rgba(244,162,97,0.3)">✦</div><div><div class="spc-name">Case Bonus</div><div class="spc-desc">Octroie +1 force au combat. <strong style="color:rgba(155,93,229,0.8)">Cachée</strong> jusqu'à ce qu'une unité s'en approche. Se déplace à chaque fin de tour !</div></div></div>
+        <div class="special-card"><div class="spc-icon" style="background:rgba(220,60,60,0.12);border:1px solid rgba(220,60,60,0.3)">✗</div><div><div class="spc-name">Piège</div><div class="spc-desc">Détruit toute unité qui entre dessus. <strong style="color:rgba(155,93,229,0.8)">Caché</strong> et repositionné aléatoirement à chaque tour. Danger invisible !</div></div></div>
+        <div class="special-card"><div class="spc-icon" style="background:rgba(155,93,229,0.1);border:1px solid rgba(155,93,229,0.28)">?</div><div><div class="spc-name">Case mystère</div><div class="spc-desc">Le <strong style="color:rgba(155,93,229,0.8)">?</strong> indique une case spéciale cachée à proximité. Approchez une unité pour la révéler !</div></div></div>
+      </div>
+    </div>
+    <div class="rules-cta" style="gap:14px;flex-wrap:wrap;">
+      <button class="rules-link" onclick="showIntro()" style="padding:18px 32px;font-size:0.82rem;">← Retour à l'accueil</button>
+      <button class="big-btn" onclick="showSetup()">⚙ Voir la configuration <span style="font-size:1.3rem">→</span></button>
+    </div>
+  </div>
+</div>

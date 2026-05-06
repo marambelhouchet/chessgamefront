@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Conquête des Territoires</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<div class="bg-glow"></div>
+
+<!-- Screens are injected here by the loader -->
+<div id="app"></div>
+
+<script>
+  /**
+   * Loads all screen partials into #app, then boots the game script.
+   * Each partial lives in /screens/<name>.html and contains one top-level div.
+   */
+  const SCREENS = ['intro', 'setup', 'rules', 'place', 'game', 'modal'];
+
+  async function loadScreens() {
+    const app = document.getElementById('app');
+
+    for (const name of SCREENS) {
+      try {
+        const res = await fetch(`screens/${name}.html`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const html = await res.text();
+        app.insertAdjacentHTML('beforeend', html);
+      } catch (err) {
+        console.error(`Failed to load screen "${name}":`, err);
+      }
+    }
+
+    // All screens are in the DOM — now boot the game
+    const script = document.createElement('script');
+    script.src = 'script.js';
+    document.body.appendChild(script);
+  }
+
+  loadScreens();
+</script>
+</body>
+</html>

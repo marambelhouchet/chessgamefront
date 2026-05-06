@@ -1,0 +1,7 @@
+/* ══════════════════ LOG ══════════════════ */
+#log{background:rgba(0,0,0,0.3);border:1px solid rgba(232,88,138,0.1);border-radius:9px;padding:8px 10px;height:200px;overflow-y:auto;font-size:0.63rem;color:var(--muted);scrollbar-width:thin;scrollbar-color:rgba(232,88,138,0.28) transparent}
+.log-entry{margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.04);line-height:1.5}
+.log-entry.combat{color:#c090f0}.log-entry.combat-detail{color:rgba(192,144,240,0.68);font-size:0.58rem;padding-left:7px;border-left:2px solid rgba(155,93,229,0.28);margin-top:-2px;border-bottom:none}
+.log-entry.capture{color:var(--rose)}.log-entry.kill{color:#f4a261;font-weight:700}
+.log-entry.warn{color:#e05050}.log-entry.info{color:var(--dim)}.log-entry.turn{color:var(--rose);font-weight:700}
+.log-entry.timer-out{color:#ff4040;font-weight:700}
