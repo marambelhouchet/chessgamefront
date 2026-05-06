@@ -1,0 +1,128 @@
+<div id="setup-screen" class="screen">
+  <div class="setup-box">
+    <div class="setup-hero">
+      <span class="ornament">⚔ ✦ ⚔</span>
+      <h1>Conquête des Territoires</h1>
+      <p>Configurez votre bataille</p>
+    </div>
+
+    <!-- Mode de jeu -->
+    <div class="setup-section">
+      <h3>🎮 Mode de jeu</h3>
+      <div class="option-grid" id="mode-opts">
+        <div class="opt-btn selected" data-val="pvp" onclick="selectMode(this,'pvp')">
+          <span class="opt-label">👥 2 Joueurs</span>
+          <span class="opt-sub">Multijoueur local<br>face à face</span>
+        </div>
+        <div class="opt-btn" data-val="ai" onclick="selectMode(this,'ai')">
+          <span class="opt-label">🤖 vs Ordinateur</span>
+          <span class="opt-sub">Jouez contre une IA<br>avec 3 niveaux</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Noms des joueurs -->
+    <div class="setup-section">
+      <h3>👤 Joueurs</h3>
+      <div class="players-row">
+        <div class="player-input-box">
+          <div class="pib-label p1">⚔ Joueur 1</div>
+          <input class="pib-input" id="p1-name" type="text" value="" maxlength="12" placeholder="Entrez votre nom">
+        </div>
+        <div class="player-input-box p2" id="p2-box">
+          <div class="pib-label p2">⚔ Joueur 2</div>
+          <input class="pib-input" id="p2-name" type="text" value="" maxlength="12" placeholder="Entrez votre nom">
+        </div>
+      </div>
+    </div>
+
+    <!-- Niveau IA (masqué en mode PvP) -->
+    <div class="setup-section" id="ai-section" style="display:none">
+      <h3>🧠 Niveau de l'IA</h3>
+      <div class="option-grid" id="ai-opts">
+        <div class="opt-btn sel-g selected" data-val="ai-easy" onclick="selectOpt(this,'ai-opts','sel-g')">
+          <span class="opt-label">🟢 Facile</span>
+          <span class="opt-sub">Mouvements aléatoires<br>Idéal pour débuter</span>
+        </div>
+        <div class="opt-btn sel-v" data-val="ai-medium" onclick="selectOpt(this,'ai-opts','sel-v')">
+          <span class="opt-label">🟡 Moyen</span>
+          <span class="opt-sub">Stratégie heuristique<br>Capture &amp; combat</span>
+        </div>
+        <div class="opt-btn selected" data-val="ai-hard" onclick="selectOpt(this,'ai-opts','selected')">
+          <span class="opt-label">🔴 Expert</span>
+          <span class="opt-sub">IA avancée<br>Priorise la victoire</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Taille de la carte -->
+    <div class="setup-section">
+      <h3>🗺 Taille de la carte</h3>
+      <div class="option-grid" id="map-opts">
+        <div class="opt-btn selected" data-val="8" onclick="selectOpt(this,'map-opts','selected')">
+          <span class="opt-label">8 × 8</span>
+          <span class="opt-sub">Standard · 64 cases<br>Victoire : 33 cases</span>
+        </div>
+        <div class="opt-btn" data-val="10" onclick="selectOpt(this,'map-opts','selected')">
+          <span class="opt-label">10 × 10</span>
+          <span class="opt-sub">Grande · 100 cases<br>Victoire : 51 cases</span>
+        </div>
+        <div class="opt-btn" data-val="12" onclick="selectOpt(this,'map-opts','selected')">
+          <span class="opt-label">12 × 12</span>
+          <span class="opt-sub">Épique · 144 cases<br>Victoire : 73 cases</span>
+        </div>
+        <div class="opt-btn" data-val="15" onclick="selectOpt(this,'map-opts','selected')">
+          <span class="opt-label">15 × 15</span>
+          <span class="opt-sub">Titanesque · 225 cases<br>Victoire : 113 cases</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Niveau de difficulté -->
+    <div class="setup-section">
+      <h3>⚡ Niveau de difficulté</h3>
+      <div class="option-grid" id="diff-opts">
+        <div class="opt-btn selected sel-g" data-val="easy" onclick="selectOpt(this,'diff-opts','sel-g')">
+          <span class="opt-label">Facile</span>
+          <span class="opt-sub">5 unités · 4 bonus<br>4 pièges</span>
+        </div>
+        <div class="opt-btn sel-v" data-val="medium" onclick="selectOpt(this,'diff-opts','sel-v')">
+          <span class="opt-label">Moyen</span>
+          <span class="opt-sub">7 unités · 6 bonus<br>6 pièges</span>
+        </div>
+        <div class="opt-btn" data-val="hard" onclick="selectOpt(this,'diff-opts','selected')">
+          <span class="opt-label">Difficile</span>
+          <span class="opt-sub">9 unités · 8 bonus<br>10 pièges</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timer -->
+    <div class="setup-section">
+      <h3>⏱ Timer par tour</h3>
+      <div class="option-grid" id="timer-opts">
+        <div class="opt-btn selected" data-val="0" onclick="selectOpt(this,'timer-opts','selected')">
+          <span class="opt-label">Sans timer</span>
+          <span class="opt-sub">Prenez votre temps</span>
+        </div>
+        <div class="opt-btn" data-val="30" onclick="selectOpt(this,'timer-opts','selected')">
+          <span class="opt-label">30 secondes</span>
+          <span class="opt-sub">Rythme rapide</span>
+        </div>
+        <div class="opt-btn" data-val="60" onclick="selectOpt(this,'timer-opts','selected')">
+          <span class="opt-label">60 secondes</span>
+          <span class="opt-sub">Rythme normal</span>
+        </div>
+        <div class="opt-btn" data-val="120" onclick="selectOpt(this,'timer-opts','selected')">
+          <span class="opt-label">2 minutes</span>
+          <span class="opt-sub">Réflexion profonde</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="start-row">
+      <button class="rules-link" onclick="showRules()">📖 Voir les règles</button>
+      <button class="big-btn" onclick="initGame()">⚔ Lancer la Bataille <span style="font-size:1.3rem">→</span></button>
+    </div>
+  </div>
+</div>

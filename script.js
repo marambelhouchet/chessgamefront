@@ -1,0 +1,17 @@
+<script src="scripts/sound.js"></script>
+<script src="scripts/config.js"></script>
+<script src="scripts/state.js"></script>
+<script src="scripts/pieces.js"></script>
+<script src="scripts/ui-animations.js"></script>
+<script src="scripts/log.js"></script>
+<script src="scripts/navigation.js"></script>
+<script src="scripts/timer.js"></script>
+<script src="scripts/dice.js"></script>
+<script src="scripts/board.js"></script>
+<script src="scripts/placement.js"></script>
+<script src="scripts/actions.js"></script>
+<script src="scripts/ai.js"></script>
+<script src="scripts/game-flow.js"></script>
+<script src="scripts/win.js"></script>
+<script src="scripts/init.js"></script>
+<script src="scripts/script.js"></script>
