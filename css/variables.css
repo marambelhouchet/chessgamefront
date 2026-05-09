@@ -1,0 +1,39 @@
+/* ══════════════════════════════════════════
+   variables.css
+   Toutes les custom properties (tokens)
+   du projet — couleurs, espacements, tailles
+   ══════════════════════════════════════════ */
+
+:root {
+  /* Couleurs joueur 1 */
+  --rose:       #e8588a;
+  --rose-deep:  #c23b6a;
+  --rose-glow:  rgba(232, 88, 138, 0.35);
+
+  /* Couleurs joueur 2 */
+  --violet:      #9b5de5;
+  --violet-deep: #6d28d9;
+  --violet-glow: rgba(155, 93, 229, 0.35);
+
+  /* Couleurs sémantiques */
+  --gold:      #f4a261;
+  --red-trap:  #e05050;
+  --green:     #4ade80;
+
+  /* Fond */
+  --bg:  #08050f;
+  --bg2: #0f0818;
+  --bg3: #160b20;
+
+  /* Bordures & texte */
+  --border: rgba(232, 88, 138, 0.2);
+  --text:   #f0e8f5;
+  --muted:  #8a7090;
+  --dim:    #3a2848;
+
+  /* Plateau */
+  --cell: 62px;
+
+  /* Timer */
+  --timer-color: #e8588a;
+}

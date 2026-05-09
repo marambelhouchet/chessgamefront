@@ -1,0 +1,51 @@
+<!--
+  screens/modal.html
+  ══════════════════
+  Modal de lancement — superposé au jeu, affiché avant le premier tour.
+  Chaque joueur lance un dé ; le plus grand score commence.
+  Injecté dans #modal-backdrop par js/loader.js.
+
+  Éléments dynamiques :
+    #roll-name-p1/p2   → noms des joueurs
+    #roll-p1/p2        → valeurs affichées des dés
+    #rbtn-name-p1/p2   → noms dans les boutons
+    #btn-roll-p1/p2    → boutons de lancement (désactivés après usage)
+    #btn-start         → bouton "Commencer" (visible après les deux lancers)
+
+  Fonctions JS :
+    startRoll(player)  → js/dice.js
+    startGame()        → js/game.js
+-->
+
+<div class="modal" id="modal-content">
+
+  <h2>⚔ Conquête des Territoires</h2>
+  <p>Chaque joueur lance un dé — le plus grand score détermine qui commence la bataille.</p>
+
+  <!-- Affichage des dés -->
+  <div class="player-roll">
+    <div style="text-align:center">
+      <div class="prn p1" id="roll-name-p1">Alice</div>
+      <div class="prv" id="roll-p1">—</div>
+    </div>
+    <div style="font-size:1.4rem;color:rgba(255,255,255,0.1);margin-top:12px">vs</div>
+    <div style="text-align:center">
+      <div class="prn p2" id="roll-name-p2">Bob</div>
+      <div class="prv" id="roll-p2">—</div>
+    </div>
+  </div>
+
+  <!-- Boutons de lancement -->
+  <button class="dice-roll-btn" id="btn-roll-p1" onclick="startRoll(1)">
+    🎲 <span id="rbtn-name-p1">Alice</span> lance le dé
+  </button>
+  <button class="dice-roll-btn" id="btn-roll-p2" onclick="startRoll(2)" disabled>
+    🎲 <span id="rbtn-name-p2">Bob</span> lance le dé
+  </button>
+
+  <!-- Bouton commencer (caché jusqu'à la fin des deux lancers) -->
+  <button class="btn-modal" id="btn-start" onclick="startGame()" style="display:none">
+    ⚔ Commencer la Bataille !
+  </button>
+
+</div>

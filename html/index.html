@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚔ Conquête des Territoires v2</title>
+
+  <!-- Polices -->
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- ═══ Feuilles de style ═══
+       index.html est dans /html/
+       "../css/" remonte à la racine → /css/  ✔ -->
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/screens/intro.css">
+  <link rel="stylesheet" href="../css/screens/setup.css">
+  <link rel="stylesheet" href="../css/screens/rules.css">
+  <link rel="stylesheet" href="../css/screens/placement.css">
+  <link rel="stylesheet" href="../css/screens/game.css">
+  <link rel="stylesheet" href="../css/components/board.css">
+  <link rel="stylesheet" href="../css/components/modal.css">
+  <link rel="stylesheet" href="../css/components/log.css">
+</head>
+<body>
+
+  <!-- Fond lumineux ambiant -->
+  <div class="bg-glow"></div>
+
+  <!-- ═══════════════════════════════════════════════
+       ÉCRANS — un seul visible à la fois via .active
+       Navigation gérée par ../js/navigation.js
+  ════════════════════════════════════════════════ -->
+
+  <!-- 1 · Accueil -->
+  <div id="intro-screen" class="screen active">
+    <div class="intro-bg"></div>
+    <div class="intro-overlay"></div>
+    <div class="intro-content">
+      <!-- ../assets/ remonte à la racine → /assets/bouton.png  ✔ -->
+      <button class="jouer-btn" onclick="showIntroToRules()">
+        <img src="../assets/bouton.png" alt="JOUER">
+      </button>
+    </div>
+  </div>
+
+  <!-- 2 · Configuration -->
+  <div id="setup-screen" class="screen"></div>
+
+  <!-- 3 · Règles -->
+  <div id="rules-screen" class="screen"></div>
+
+  <!-- 4 · Placement des unités -->
+  <div id="place-screen" class="screen"></div>
+
+  <!-- 5 · Plateau de jeu -->
+  <div id="game-screen" class="screen"></div>
+
+  <!-- 6 · Modal lancer de dé -->
+  <div id="modal-backdrop"></div>
+
+  <!-- ═══════════════════════════════════════════════
+       SCRIPTS — ../js/ remonte à la racine → /js/  ✔
+       Ordre : utilitaires → données → moteur → UI → IA
+  ════════════════════════════════════════════════ -->
+  <script src="../js/loader.js"></script>
+  <script src="../js/sound.js"></script>
+  <script src="../js/constants.js"></script>
+  <script src="../js/state.js"></script>
+  <script src="../js/graphics.js"></script>
+  <script src="../js/board.js"></script>
+  <script src="../js/placement.js"></script>
+  <script src="../js/dice.js"></script>
+  <script src="../js/movement.js"></script>
+  <script src="../js/combat.js"></script>
+  <script src="../js/timer.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/ai.js"></script>
+  <script src="../js/navigation.js"></script>
+  <script src="../js/setup.js"></script>
+  <script src="../js/game.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!--
+  screens/placement.html
+  ══════════════════════
+  Phase de placement des unités avant la partie.
+  Injecté dans #place-screen par js/loader.js.
+
+  Éléments dynamiques mis à jour par JS :
+    #place-player-name  → nom du joueur actif           (js/placement.js)
+    #place-sub          → instruction contextuelle       (js/placement.js)
+    #place-count        → nombre d'unités restantes      (js/placement.js)
+    #unit-picker        → boutons de sélection d'unité   (js/placement.js)
+    #place-board        → grille du plateau              (js/board.js)
+    #place-log          → journal des placements         (js/placement.js)
+    #place-row-nums     → numéros de lignes              (js/board.js)
+    #place-col-coords   → lettres de colonnes            (js/board.js)
+
+  Fonctions JS :
+    showSetup()         → js/navigation.js
+-->
+
+<!-- Barre de navigation supérieure -->
+<div class="place-header">
+  <button class="gh-back" onclick="showSetup()">← Config</button>
+  <div class="place-title">Phase de Placement</div>
+  <div style="width:80px"></div>
+</div>
+
+<!-- Bandeau joueur actif + compteur d'unités -->
+<div class="place-info">
+  <div>
+    <div class="pi-player p1" id="place-player-name">Alice</div>
+    <div class="pi-sub" id="place-sub">Cliquez une case verte pour placer votre unité</div>
+  </div>
+  <div class="pi-units-left">
+    <div class="pi-count" id="place-count">5</div>
+    <div class="pi-units-sub">unités restantes</div>
+  </div>
+</div>
+
+<!-- Sélecteur de type d'unité (rempli par js/placement.js) -->
+<div class="unit-picker" id="unit-picker"></div>
+
+<!-- Zone principale : journal + plateau -->
+<div class="place-main">
+
+  <!-- Journal des placements -->
+  <div class="panel" style="width:190px">
+    <div class="panel-title">Journal</div>
+    <div id="place-log" class="place-log"></div>
+  </div>
+
+  <!-- Plateau avec coordonnées -->
+  <div class="board-wrap">
+    <div style="display:flex;gap:2px">
+      <!-- Numéros de lignes -->
+      <div style="display:flex;flex-direction:column;gap:0;padding-top:24px">
+        <div id="place-row-nums" class="row-nums"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <!-- Lettres de colonnes -->
+        <div class="coord-row" id="place-col-coords"></div>
+        <!-- Grille (injectée par js/board.js) -->
+        <div id="place-board"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Colonne droite vide (équilibre visuel) -->
+  <div style="width:190px"></div>
+
+</div>
