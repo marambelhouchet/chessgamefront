@@ -265,6 +265,11 @@ html,body{height:100%;font-family:'Rajdhani',sans-serif;background:var(--bg);col
 .btn:disabled{opacity:0.26;cursor:not-allowed}
 .btn-end{background:linear-gradient(135deg,var(--rose),var(--rose-deep));color:white;box-shadow:0 4px 16px rgba(232,88,138,0.35),inset 0 1px 0 rgba(255,255,255,0.16);margin-top:8px}
 .btn-end:not(:disabled):hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn-defend{background:rgba(155,93,229,0.18);border:1.5px solid rgba(155,93,229,0.45);color:#d4b3f7;border-radius:10px;padding:9px;width:100%;font-size:0.75rem;font-weight:700;letter-spacing:0.05em;cursor:pointer;transition:all 0.2s;margin-top:6px;font-family:'Rajdhani',sans-serif}
+.btn-defend:not(:disabled):hover{background:rgba(155,93,229,0.32);border-color:#9b5de5;transform:translateY(-1px)}
+.btn-defend:disabled{opacity:0.26;cursor:not-allowed}
+.btn-defend.defending-active{background:rgba(155,93,229,0.45);border-color:#9b5de5;color:white;box-shadow:0 0 16px rgba(155,93,229,0.5),inset 0 1px 0 rgba(255,255,255,0.14)}
+.cell.defending-cell{border-color:rgba(155,93,229,0.85)!important;box-shadow:0 0 14px rgba(155,93,229,0.45),inset 0 0 8px rgba(155,93,229,0.12)!important;background:rgba(155,93,229,0.15)!important}
 .move-warn{font-size:0.6rem;color:var(--violet);margin-top:4px;min-height:1em;text-align:center;font-weight:600}
 .board-wrap{display:flex;flex-direction:column;align-items:center}
 .coord-row{display:flex;align-items:center;padding-left:20px;gap:2px}
@@ -509,6 +514,7 @@ html,body{height:100%;font-family:'Rajdhani',sans-serif;background:var(--bg);col
         <div class="rule-card"><div class="rule-icon">🧩</div><div><div class="rule-title">Placement des unités</div><div class="rule-desc">Avant la bataille, chaque joueur place ses unités à tour de rôle dans sa zone de départ (coins colorés). Choisissez stratégiquement !</div></div></div>
         <div class="rule-card"><div class="rule-icon">⏱</div><div><div class="rule-title">Timer par tour</div><div class="rule-desc">Si un timer est activé, le tour se termine automatiquement à 0. L'unité sélectionnée reste sur place. Jouez vite !</div></div></div>
         <div class="rule-card"><div class="rule-icon">💀</div><div><div class="rule-title">Points de kill</div><div class="rule-desc">Tank = <strong style="color:var(--gold)">5 pts</strong>, Cavalier = <strong style="color:var(--rose)">3 pts</strong>, Soldat = <strong style="color:var(--muted)">2 pts</strong>. S'ajoutent à votre score total.</div></div></div>
+        <div class="rule-card"><div class="rule-icon">🛡</div><div><div class="rule-title">Défendre</div><div class="rule-desc">Sélectionnez une unité puis cliquez <strong style="color:#d4b3f7">🛡 Défendre</strong>. Elle gagne <strong style="color:#9b5de5">+2 en défense</strong> jusqu'au prochain tour ennemi, mais consomme tous vos points de mouvement.</div></div></div>
       </div>
     </div>
     <div>
@@ -706,6 +712,7 @@ html,body{height:100%;font-family:'Rajdhani',sans-serif;background:var(--bg);col
             </svg>
             <div class="dice-hint">Cliquez pour lancer</div>
           </div>
+          <button class="btn btn-defend" id="btn-defend" onclick="activateDefend()" disabled>🛡 Défendre</button>
           <button class="btn btn-end" id="btn-end" onclick="endTurn()" disabled>Fin du tour →</button>
           <div class="move-warn" id="move-warning"></div>
         </div>
@@ -857,10 +864,63 @@ function playTrapSound(){
 
 /* ══════════════════ UNIT DEFINITIONS ══════════════════ */
 const UNITS = {
-  S: { label:'Soldat',   maxStep:1, power:2, killPts:2, short:'S' },
-  C: { label:'Cavalier', maxStep:2, power:1, killPts:3, short:'C' },
-  T: { label:'Tank',     maxStep:1, power:3, killPts:5, short:'T' }
+  S: { label:'Soldat',   maxStep:1, power:2, killPts:2, short:'S', moveType:'diagonal' },
+  C: { label:'Cavalier', maxStep:2, power:1, killPts:3, short:'C', moveType:'straight' },
+  T: { label:'Tank',     maxStep:1, power:3, killPts:5, short:'T', moveType:'all'      }
 };
+
+/* Retourne toutes les cases cibles valides pour une unité en (r,c) avec pts points */
+function getValidMoves(r, c, pts){
+  const unit = board[r][c].unit;
+  const mt = UNITS[unit].moveType;
+  const targets = [];
+
+  if(mt === 'knight'){
+    /* Cavalier : saut en L (±2,±1) ou (±1,±2) — saute par-dessus */
+    for(const[dr,dc] of [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]]){
+      const nr=r+dr, nc=c+dc;
+      if(nr>=0&&nr<SIZE&&nc>=0&&nc<SIZE&&board[nr][nc].player!==board[r][c].player)
+        targets.push({r2:nr,c2:nc,dist:1});
+    }
+  } else if(mt === 'straight'){
+    /* Cavalier original : 1 ou 2 cases horizontal/vertical, bloqué */
+    const reach = Math.min(UNITS[unit].maxStep, pts);
+    for(const[dr,dc] of [[0,1],[0,-1],[1,0],[-1,0]]){
+      for(let d=1;d<=reach;d++){
+        const nr=r+dr*d, nc=c+dc*d;
+        if(nr<0||nr>=SIZE||nc<0||nc>=SIZE) break;
+        if(board[nr][nc].player===board[r][c].player) break;
+        targets.push({r2:nr,c2:nc,dist:d});
+        if(board[nr][nc].player!==0) break;
+      }
+    }
+  } else if(mt === 'diagonal'){
+    /* Soldat : diagonales jusqu'à maxStep cases (bloqué par alliés/ennemis) */
+    const reach = Math.min(UNITS[unit].maxStep, pts);
+    for(const[dr,dc] of [[1,1],[1,-1],[-1,1],[-1,-1]]){
+      for(let d=1;d<=reach;d++){
+        const nr=r+dr*d, nc=c+dc*d;
+        if(nr<0||nr>=SIZE||nc<0||nc>=SIZE) break;
+        if(board[nr][nc].player===board[r][c].player) break;
+        targets.push({r2:nr,c2:nc,dist:d});
+        if(board[nr][nc].player!==0) break;
+      }
+    }
+  } else if(mt === 'all'){
+    /* Tank : toutes directions (H/V/diagonales) 1 case */
+    const reach = Math.min(UNITS[unit].maxStep, pts);
+    for(const[dr,dc] of [[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]]){
+      for(let d=1;d<=reach;d++){
+        const nr=r+dr*d, nc=c+dc*d;
+        if(nr<0||nr>=SIZE||nc<0||nc>=SIZE) break;
+        if(board[nr][nc].player===board[r][c].player) break;
+        targets.push({r2:nr,c2:nc,dist:d});
+        if(board[nr][nc].player!==0) break;
+      }
+    }
+  }
+  return targets;
+}
 
 /* ══════════════════ DIFFICULTY CONFIG ══════════════════ */
 const DIFF_CONFIG = {
@@ -1159,7 +1219,7 @@ let _bonusCount = 4, _trapCount = 4; // remembered for reshuffle
 function initBoardData(bonusCount, trapCount){
   _bonusCount = bonusCount; _trapCount = trapCount;
   bonusCells=new Set(); trapCells=new Set(); revealedCells=new Set();
-  for(let r=0;r<SIZE;r++){board[r]=[];for(let c=0;c<SIZE;c++){board[r][c]={player:0,owner:0,unit:null,bonus:false,trap:false,startZone:0,bonusBuff:false};}}
+  for(let r=0;r<SIZE;r++){board[r]=[];for(let c=0;c<SIZE;c++){board[r][c]={player:0,owner:0,unit:null,bonus:false,trap:false,startZone:0,bonusBuff:false,defending:false};}}
   /* start zones: p1 top-left 2 rows, p2 bottom-right 2 rows */
   for(let r=0;r<2;r++)for(let c=0;c<Math.min(SIZE,Math.ceil(initialUnits[1].length/2)+1);c++)board[r][c].startZone=1;
   for(let r=SIZE-2;r<SIZE;r++)for(let c=Math.max(0,SIZE-Math.ceil(initialUnits[2].length/2)-1);c<SIZE;c++)board[r][c].startZone=2;
@@ -1389,8 +1449,9 @@ function renderBoard(){
       if(d.owner===1){el.classList.add('territory-p1');s1++;}
       else if(d.owner===2){el.classList.add('territory-p2');s2++;}
       if(d.unit)el.classList.add('has-unit');
+      if(d.defending)el.classList.add('defending-cell');
       if(selectedCell&&selectedCell[0]===r&&selectedCell[1]===c)el.classList.add('selected');
-      el.innerHTML=d.unit?pieceSVG(d.unit,d.player,{buffed:!!d.bonusBuff})+(d.bonusBuff?'<span style="position:absolute;top:1px;left:2px;font-size:9px;z-index:4;text-shadow:0 0 6px gold">⚡</span>':''):'';
+      el.innerHTML=d.unit?pieceSVG(d.unit,d.player,{buffed:!!d.bonusBuff})+(d.bonusBuff?'<span style="position:absolute;top:1px;left:2px;font-size:9px;z-index:4;text-shadow:0 0 6px gold">⚡</span>':'')+(d.defending?'<span style="position:absolute;top:1px;right:2px;font-size:9px;z-index:4;text-shadow:0 0 6px #9b5de5">🛡</span>':''):'';
       if(d.player===1&&d.unit){u1++;alive1.push(d.unit);if(d.bonus)b1++;}
       if(d.player===2&&d.unit){u2++;alive2.push(d.unit);if(d.bonus)b2++;}
     }
@@ -1444,13 +1505,10 @@ function renderPips(id,player,initial,alive){
 
 function showReachable(){
   if(!selectedCell)return;
-  const[sr,sc]=selectedCell;const stats=UNITS[board[sr][sc].unit];
-  for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE;c++){
-    if(r===sr&&c===sc)continue;
-    const dr=Math.abs(r-sr),dc=Math.abs(c-sc),dist=dr+dc;
-    if((r===sr||c===sc)&&dist<=stats.maxStep&&dist<=movePoints&&board[r][c].player!==currentPlayer)
-      document.getElementById(`c${r}_${c}`).classList.add('reachable');
-  }
+  const[sr,sc]=selectedCell;
+  const moves=getValidMoves(sr,sc,movePoints);
+  for(const{r2,c2} of moves)
+    document.getElementById(`c${r2}_${c2}`).classList.add('reachable');
 }
 
 /* ══════════════════ TIMER ══════════════════ */
@@ -1492,14 +1550,16 @@ function timerExpired(){
 /* ══════════════════ CLICK HANDLERS ══════════════════ */
 function handleClick(r,c){
   if(!diceRolled){addLog("Lancez le dé d'abord !",'warn');return;}
-  if(selectedCell){const[sr,sc]=selectedCell;if(sr===r&&sc===c){selectedCell=null;renderBoard();return;}processAction(sr,sc,r,c);}
-  else{if(board[r][c].player===currentPlayer&&board[r][c].unit){selectedCell=[r,c];renderBoard();showReachable();}}
+  if(selectedCell){const[sr,sc]=selectedCell;if(sr===r&&sc===c){selectedCell=null;renderBoard();updateMoveUI();return;}processAction(sr,sc,r,c);}
+  else{if(board[r][c].player===currentPlayer&&board[r][c].unit){selectedCell=[r,c];renderBoard();showReachable();updateMoveUI();}}
 }
 
 function processAction(r1,c1,r2,c2){
   const unit=board[r1][c1].unit;const stats=UNITS[unit];
-  const dr=Math.abs(r1-r2),dc=Math.abs(c1-c2),dist=dr+dc;
-  if(!(r1===r2||c1===c2)||dist>stats.maxStep){addLog(`❌ ${stats.label} : max ${stats.maxStep} case(s) en ligne droite.`,'warn');selectedCell=null;renderBoard();return;}
+  const moves=getValidMoves(r1,c1,movePoints);
+  const match=moves.find(m=>m.r2===r2&&m.c2===c2);
+  if(!match){addLog(`❌ ${stats.label} : mouvement invalide.`,'warn');selectedCell=null;renderBoard();return;}
+  const dist=match.dist;
   if(dist>movePoints){addLog(`❌ Pas assez de points (besoin:${dist}, reste:${movePoints}).`,'warn');selectedCell=null;renderBoard();return;}
   if(board[r2][c2].player!==0&&board[r2][c2].player!==currentPlayer)doCombat(r1,c1,r2,c2,dist);
   else doMove(r1,c1,r2,c2,dist);
@@ -1509,10 +1569,11 @@ function processAction(r1,c1,r2,c2){
 /* ══════════════════ COMBAT ══════════════════ */
 function doCombat(r1,c1,r2,c2,cost){
   const aUnit=board[r1][c1].unit,dUnit=board[r2][c2].unit;
-  const ab=board[r1][c1].bonusBuff?1:0,db=board[r2][c2].bonusBuff?1:0;
+  const ab=board[r1][c1].bonusBuff?1:0, db=board[r2][c2].bonusBuff?1:0;
+  const defendBonus = board[r2][c2].defending ? 2 : 0;
   const ad=Math.ceil(Math.random()*6),dd=Math.ceil(Math.random()*6);
   const aBase=UNITS[aUnit].power,dBase=UNITS[dUnit].power;
-  const aTotal=aBase+ad+ab,dTotal=dBase+dd+db;
+  const aTotal=aBase+ad+ab,dTotal=dBase+dd+db+defendBonus;
   const an=currentPlayer===1?CFG.p1:CFG.p2,dn=currentPlayer===1?CFG.p2:CFG.p1;
   const aColor=currentPlayer===1?'#e8588a':'#9b5de5';
   const dColor=currentPlayer===1?'#9b5de5':'#e8588a';
@@ -1520,7 +1581,7 @@ function doCombat(r1,c1,r2,c2,cost){
   animatePiece(r1,c1,'anim-attack',500);
   addLog(`⚔ ${an} (${UNITS[aUnit].label}) VS ${dn} (${UNITS[dUnit].label})`,'combat');
   addLog(`  ${an} : dé(${ad}) + force(${aBase})${ab?' + 1 bonus':''} = ${aTotal}`,'combat-detail');
-  addLog(`  ${dn} : dé(${dd}) + force(${dBase})${db?' + 1 bonus':''} = ${dTotal}`,'combat-detail');
+  addLog(`  ${dn} : dé(${dd}) + force(${dBase})${db?' + 1 bonus':''}${defendBonus?' + 2 défense':''} = ${dTotal}${board[r2][c2].defending?' 🛡':''}`,'combat-detail');
   let attackerWins;
   if(aTotal!==dTotal){attackerWins=aTotal>dTotal;}
   else{
@@ -1547,6 +1608,7 @@ function doCombat(r1,c1,r2,c2,cost){
     spawnKillBanner(killLabel);
     setTimeout(()=>{
       board[r1][c1].bonusBuff=false;
+      board[r1][c1].defending=false;
       doMove(r1,c1,r2,c2,cost);
       checkWin();
       renderBoard();
@@ -1562,6 +1624,7 @@ function doCombat(r1,c1,r2,c2,cost){
     board[r1][c1].bonusBuff=false;
     board[r2][c2].bonusBuff=false;
     board[r1][c1].unit=null;board[r1][c1].player=0;movePoints-=cost;
+    // defending stays on defender (it protected itself!)
     checkWin();
   }
   updateMoveUI();
@@ -1572,8 +1635,10 @@ function doMove(r1,c1,r2,c2,cost){
   const color=currentPlayer===1?'#e8588a':'#9b5de5';
   animatePiece(r1,c1,'anim-move',400);
   spawnParticles(getCellCenter(r1,c1).x,getCellCenter(r1,c1).y,color,5,false);
+  const wasDefending=board[r1][c1].defending;
   board[r2][c2].unit=unit;board[r2][c2].player=currentPlayer;board[r2][c2].owner=currentPlayer;
-  board[r1][c1].unit=null;board[r1][c1].player=0;
+  board[r2][c2].defending=false; // moving cancels defend stance
+  board[r1][c1].unit=null;board[r1][c1].player=0;board[r1][c1].defending=false;
   movePoints-=cost;
   flashCell(r2,c2);
   if(board[r2][c2].trap){
@@ -1658,7 +1723,18 @@ function updateMoveUI(){
   const pts=Math.max(0,movePoints);
   document.getElementById('move-pts').textContent=pts;
   const btn=document.getElementById('btn-end'),warn=document.getElementById('move-warning');
-  if(!diceRolled){btn.disabled=true;warn.textContent='';return;}
+  const defendBtn=document.getElementById('btn-defend');
+  if(!diceRolled){btn.disabled=true;if(defendBtn)defendBtn.disabled=true;warn.textContent='';return;}
+  // defend button: enabled when dice rolled and an own unit is selected
+  if(defendBtn){
+    const hasSelection=selectedCell&&board[selectedCell[0]][selectedCell[1]].player===currentPlayer;
+    defendBtn.disabled=!hasSelection;
+    if(hasSelection&&board[selectedCell[0]][selectedCell[1]].defending){
+      defendBtn.textContent='🛡 Annuler défense';defendBtn.classList.add('defending-active');
+    } else {
+      defendBtn.textContent='🛡 Défendre';defendBtn.classList.remove('defending-active');
+    }
+  }
   if(pts<=0){btn.disabled=false;warn.textContent='';}
   else if(!hasPossibleMove()){btn.disabled=false;warn.textContent='Aucun mouvement possible.';}
   else{btn.disabled=true;warn.textContent=`⚠ Utilisez vos ${pts} pt(s) d'abord !`;}
@@ -1667,13 +1743,7 @@ function updateMoveUI(){
 function hasPossibleMove(){
   for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE;c++){
     if(board[r][c].player!==currentPlayer||!board[r][c].unit)continue;
-    const maxStep=UNITS[board[r][c].unit].maxStep,reach=Math.min(maxStep,movePoints);
-    for(const[dr,dc]of[[0,1],[0,-1],[1,0],[-1,0]])for(let d=1;d<=reach;d++){
-      const nr=r+dr*d,nc=c+dc*d;
-      if(nr<0||nr>=SIZE||nc<0||nc>=SIZE)break;
-      if(board[nr][nc].player===currentPlayer)break;
-      return true;
-    }
+    if(getValidMoves(r,c,movePoints).length>0)return true;
   }
   return false;
 }
@@ -1688,8 +1758,15 @@ function updateTurnUI(){
 
 function endTurn(){
   stopTimer();
+  // Clear defending state of the player whose turn just ended
+  const prevPlayer = currentPlayer;
+  for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE;c++){
+    if(board[r][c].player===prevPlayer) board[r][c].defending=false;
+  }
   currentPlayer=currentPlayer===1?2:1;movePoints=0;diceRolled=false;selectedCell=null;
   document.getElementById('btn-end').disabled=true;
+  const defendBtn=document.getElementById('btn-defend');
+  if(defendBtn){defendBtn.disabled=true;defendBtn.textContent='🛡 Défendre';defendBtn.classList.remove('defending-active');}
   document.getElementById('dice-pips').innerHTML='';
   document.getElementById('move-warning').textContent='';
   reshuffleSpecials();
@@ -1701,6 +1778,27 @@ function endTurn(){
   } else {
     startTimer();
   }
+}
+
+/* ══════════════════ DEFEND ACTION ══════════════════ */
+function activateDefend(){
+  if(!diceRolled){addLog("Lancez le dé d'abord !",'warn');return;}
+  if(!selectedCell){addLog("Sélectionnez d'abord une unité à mettre en défense.",'warn');return;}
+  const[r,c]=selectedCell;
+  if(board[r][c].player!==currentPlayer){addLog("Ce n'est pas votre unité !",'warn');return;}
+  if(board[r][c].defending){
+    // Toggle off
+    board[r][c].defending=false;
+    addLog(`🛡 ${UNITS[board[r][c].unit].label} en (${r},${c}) quitte le mode défense.`,'info');
+  } else {
+    // Toggle on — consume all remaining move points
+    board[r][c].defending=true;
+    movePoints=0;
+    addLog(`🛡 ${UNITS[board[r][c].unit].label} en (${r},${c}) est en DÉFENSE ! (+2 contre attaques ennemies ce tour)`,'capture');
+  }
+  selectedCell=null;
+  updateMoveUI();
+  renderBoard();
 }
 
 /* ══════════════════ WIN CHECK ══════════════════ */
@@ -1743,6 +1841,7 @@ function replayGame(){
     if(board[r][c].bonus)bonusCells.add(`${r},${c}`);
     if(board[r][c].trap)trapCells.add(`${r},${c}`);
     board[r][c].bonusBuff = false;
+    board[r][c].defending = false;
   }
   currentPlayer = 1;
   movePoints = 0; diceRolled = false; selectedCell = null;
@@ -1978,16 +2077,8 @@ function aiGetAllMoves(player,pts){
   const moves=[];
   for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE;c++){
     if(board[r][c].player!==player||!board[r][c].unit)continue;
-    const maxStep=UNITS[board[r][c].unit].maxStep;
-    const reach=Math.min(maxStep,pts);
-    for(const[dr,dc]of[[0,1],[0,-1],[1,0],[-1,0]]){
-      for(let d=1;d<=reach;d++){
-        const nr=r+dr*d,nc=c+dc*d;
-        if(nr<0||nr>=SIZE||nc<0||nc>=SIZE)break;
-        if(board[nr][nc].player===player)break; // bloqué par allié
-        moves.push({r1:r,c1:c,r2:nr,c2:nc,dist:d});
-        if(board[nr][nc].player!==0)break; // après ennemi, stop
-      }
+    for(const m of getValidMoves(r,c,pts)){
+      if(m.dist<=pts) moves.push({r1:r,c1:c,...m});
     }
   }
   return moves;
